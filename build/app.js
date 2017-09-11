@@ -60,50 +60,11 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 7);
+/******/ 	return __webpack_require__(__webpack_require__.s = 8);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Point = (function () {
-    function Point(x, y) {
-        if (x === void 0) { x = 0; }
-        if (y === void 0) { y = 0; }
-        this.x = x;
-        this.y = y;
-    }
-    Point.prototype.updateFromMouseEvent = function (e) {
-        this.x = e.clientX;
-        this.y = e.clientY;
-    };
-    Point.prototype.copy = function () {
-        return new Point(this.x, this.y);
-    };
-    Point.prototype.bumpBy = function (other) {
-        this.x = this.x + other.x;
-        this.y = this.y + other.y;
-    };
-    Point.prototype.add = function (other) {
-        return new Point(this.x + other.x, this.y + other.y);
-    };
-    Point.prototype.subtract = function (other) {
-        return new Point(this.x - other.x, this.y - other.y);
-    };
-    Point.prototype.toModel = function () {
-        return this.copy();
-    };
-    return Point;
-}());
-exports.Point = Point;
-
-
-/***/ }),
-/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -149,7 +110,152 @@ exports.Ele = Ele;
 
 
 /***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Point = (function () {
+    function Point(x, y) {
+        if (x === void 0) { x = 0; }
+        if (y === void 0) { y = 0; }
+        this.x = x;
+        this.y = y;
+    }
+    Point.prototype.updateFromMouseEvent = function (e) {
+        this.x = e.clientX;
+        this.y = e.clientY;
+    };
+    Point.prototype.copy = function () {
+        return new Point(this.x, this.y);
+    };
+    Point.prototype.bumpBy = function (other) {
+        this.x = this.x + other.x;
+        this.y = this.y + other.y;
+    };
+    Point.prototype.add = function (other) {
+        return new Point(this.x + other.x, this.y + other.y);
+    };
+    Point.prototype.subtract = function (other) {
+        return new Point(this.x - other.x, this.y - other.y);
+    };
+    Point.prototype.toModel = function () {
+        return this.copy();
+    };
+    return Point;
+}());
+exports.Point = Point;
+var PointAverager = (function () {
+    function PointAverager() {
+        this._averageBuffer = [];
+        this._averageBufferSize = 10;
+    }
+    Object.defineProperty(PointAverager.prototype, "average", {
+        get: function () {
+            var xSum = 0;
+            var ySum = 0;
+            this._averageBuffer.forEach(function (point) {
+                xSum += point.x;
+                ySum += point.y;
+            });
+            if (this._averageBuffer.length === 0) {
+                return new Point();
+            }
+            else {
+                return new Point(xSum / this._averageBuffer.length, ySum / this._averageBuffer.length);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    PointAverager.prototype.push = function (p) {
+        this._averageBuffer.push(p.copy());
+        if (this._averageBuffer.length > this._averageBufferSize) {
+            this._averageBuffer.splice(0, 1);
+        }
+    };
+    PointAverager.prototype.clear = function () {
+        this._averageBuffer = [];
+    };
+    return PointAverager;
+}());
+exports.PointAverager = PointAverager;
+
+
+/***/ }),
 /* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var img_ele_1 = __webpack_require__(9);
+var point_1 = __webpack_require__(1);
+var ele_dragger_1 = __webpack_require__(4);
+var ele_zoomer_1 = __webpack_require__(5);
+var model_1 = __webpack_require__(3);
+var ImgDragZoomEle = (function (_super) {
+    __extends(ImgDragZoomEle, _super);
+    function ImgDragZoomEle(src, onRemoved) {
+        if (src === void 0) { src = null; }
+        var _this = _super.call(this, src, onRemoved) || this;
+        _this._pos = new point_1.Point(0, 0);
+        _this.dragger = new ele_dragger_1.EleDragger(_this, _this._pos);
+        _this.zoomer = new ele_zoomer_1.EleZoomer(_this, _this._pos);
+        _this.imgElement.addEventListener("load", function () { return _this._onLoaded(); });
+        return _this;
+    }
+    Object.defineProperty(ImgDragZoomEle.prototype, "pos", {
+        get: function () { return this._pos; },
+        enumerable: true,
+        configurable: true
+    });
+    ImgDragZoomEle.prototype.toModel = function () {
+        return new ImgDragZoomEleModel(this._pos.toModel(), this.zoomer.size.toModel(), _super.prototype.toModel.call(this));
+    };
+    ImgDragZoomEle.fromModel = function (model, onRemoved) {
+        var img = new ImgDragZoomEle(model.imgEleModel.src, onRemoved);
+        img._pos.x = model.pos.x;
+        img._pos.y = model.pos.y;
+        img.dragger.setPos(img._pos);
+        img.zoomer.setSize(new point_1.Point(model.size.x, model.size.y));
+        return img;
+    };
+    ImgDragZoomEle.prototype._onLoaded = function () {
+        if (this.zoomer.size.x === 0) {
+            this.zoomer.setSize(new point_1.Point(this.imgElement.naturalWidth, this.imgElement.naturalHeight));
+        }
+    };
+    return ImgDragZoomEle;
+}(img_ele_1.ImgEle));
+exports.ImgDragZoomEle = ImgDragZoomEle;
+var ImgDragZoomEleModel = (function (_super) {
+    __extends(ImgDragZoomEleModel, _super);
+    function ImgDragZoomEleModel(pos, size, imgEleModel) {
+        var _this = _super.call(this) || this;
+        _this.pos = pos;
+        _this.size = size;
+        _this.imgEleModel = imgEleModel;
+        return _this;
+    }
+    return ImgDragZoomEleModel;
+}(model_1.Model));
+exports.ImgDragZoomEleModel = ImgDragZoomEleModel;
+
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -164,13 +270,13 @@ exports.Model = Model;
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var point_1 = __webpack_require__(0);
+var point_1 = __webpack_require__(1);
 var EleDragger = (function () {
     function EleDragger(_ele, _pos) {
         var _this = this;
@@ -179,6 +285,10 @@ var EleDragger = (function () {
         this._px = "px";
         this._mousePos = new point_1.Point(0, 0);
         this._dragging = false;
+        // todo: the "coast" function is copied between here and axis-ele.ts. Need to combine these so we don't repeat the code.
+        this._timerHandle = -1;
+        this._velocity = new point_1.Point(0, 0);
+        this._velocityAverager = new point_1.PointAverager();
         this._ele.style.display = "block";
         this._ele.style.position = "absolute";
         this.setPos(this._pos);
@@ -194,25 +304,57 @@ var EleDragger = (function () {
         this._ele.style.top = pos.y + this._px;
     };
     EleDragger.prototype._onMouseMove = function (e) {
+        var _this = this;
         var oldMousePos = this._mousePos.copy();
         this._mousePos.updateFromMouseEvent(e);
         if (this._dragging) {
             var delta = this._mousePos.subtract(oldMousePos);
             this._pos.bumpBy(delta);
             this.setPos(this._pos);
+            if (this._timerHandle !== -1) {
+                clearTimeout(this._timerHandle);
+            }
+            this._timerHandle = setTimeout(function () { return _this._dragTimeout(); }, 100);
+            this._velocityAverager.push(delta);
         }
         e.preventDefault();
         e.stopPropagation();
     };
     EleDragger.prototype._onMouseDown = function (e) {
         this._dragging = true;
+        this._velocityAverager.clear();
+        this._velocity = new point_1.Point();
         e.preventDefault();
         e.stopPropagation();
     };
     EleDragger.prototype._onMouseUp = function (e) {
+        var _this = this;
         this._dragging = false;
+        this._velocity = this._velocityAverager.average;
+        if (this._timerHandle !== -1) {
+            clearTimeout(this._timerHandle);
+        }
+        this._timerHandle = setInterval(function () { return _this._coast(); }, 13);
         e.preventDefault();
         e.stopPropagation();
+    };
+    EleDragger.prototype._dragTimeout = function () {
+        this._velocityAverager.clear();
+    };
+    EleDragger.prototype._coast = function () {
+        var xVel = Math.abs(this._velocity.x);
+        var yVel = Math.abs(this._velocity.y);
+        if (xVel < 0.01 && yVel < 0.01) {
+            clearInterval(this._timerHandle);
+            this._timerHandle = -1;
+            this._velocity = new point_1.Point(0, 0);
+        }
+        else {
+            this._pos.bumpBy(this._velocity);
+            this.setPos(this._pos);
+            this._velocity.x *= 0.95;
+            this._velocity.y *= 0.95;
+        }
     };
     return EleDragger;
 }());
@@ -220,14 +362,14 @@ exports.EleDragger = EleDragger;
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var point_1 = __webpack_require__(0);
-var zoom1d_1 = __webpack_require__(5);
+var point_1 = __webpack_require__(1);
+var zoom1d_1 = __webpack_require__(6);
 var EleZoomer = (function () {
     function EleZoomer(_ele, _pos) {
         var _this = this;
@@ -288,7 +430,7 @@ exports.EleZoomer = EleZoomer;
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -328,36 +470,6 @@ exports.Zoom1d = Zoom1d;
 
 
 /***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = __webpack_require__(1);
-var DivEle = (function (_super) {
-    __extends(DivEle, _super);
-    function DivEle() {
-        var _this = _super.call(this) || this;
-        _this.target = document.createElement("div");
-        return _this;
-    }
-    return DivEle;
-}(ele_1.Ele));
-exports.DivEle = DivEle;
-
-
-/***/ }),
 /* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -374,11 +486,41 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var img_drag_zoom_ele_1 = __webpack_require__(9);
-var video_drag_zoom_ele_1 = __webpack_require__(11);
-var axis_ele_1 = __webpack_require__(13);
-var web_app_1 = __webpack_require__(14);
-var controls_1 = __webpack_require__(15);
+var ele_1 = __webpack_require__(0);
+var DivEle = (function (_super) {
+    __extends(DivEle, _super);
+    function DivEle() {
+        var _this = _super.call(this) || this;
+        _this.target = document.createElement("div");
+        return _this;
+    }
+    return DivEle;
+}(ele_1.Ele));
+exports.DivEle = DivEle;
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var img_drag_zoom_ele_1 = __webpack_require__(2);
+var video_drag_zoom_ele_1 = __webpack_require__(10);
+var axis_ele_1 = __webpack_require__(12);
+var web_app_1 = __webpack_require__(13);
+var controls_1 = __webpack_require__(14);
 var WebImgApp = (function (_super) {
     __extends(WebImgApp, _super);
     function WebImgApp() {
@@ -448,44 +590,6 @@ window.onload = function () {
 
 
 /***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = __webpack_require__(1);
-var ButtonEle = (function (_super) {
-    __extends(ButtonEle, _super);
-    function ButtonEle(buttonText, _onClicked) {
-        var _this = _super.call(this) || this;
-        _this._onClicked = _onClicked;
-        _this.target = document.createElement("button");
-        _this.buttonElement.innerHTML = buttonText;
-        _this.buttonElement.onclick = _this._onClicked;
-        return _this;
-    }
-    Object.defineProperty(ButtonEle.prototype, "buttonElement", {
-        get: function () { return this.target; },
-        enumerable: true,
-        configurable: true
-    });
-    return ButtonEle;
-}(ele_1.Ele));
-exports.ButtonEle = ButtonEle;
-
-
-/***/ }),
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -502,79 +606,8 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var img_ele_1 = __webpack_require__(10);
-var point_1 = __webpack_require__(0);
-var ele_dragger_1 = __webpack_require__(3);
-var ele_zoomer_1 = __webpack_require__(4);
-var model_1 = __webpack_require__(2);
-var ImgDragZoomEle = (function (_super) {
-    __extends(ImgDragZoomEle, _super);
-    function ImgDragZoomEle(src, onRemoved) {
-        if (src === void 0) { src = null; }
-        var _this = _super.call(this, src, onRemoved) || this;
-        _this._pos = new point_1.Point(0, 0);
-        _this.dragger = new ele_dragger_1.EleDragger(_this, _this._pos);
-        _this.zoomer = new ele_zoomer_1.EleZoomer(_this, _this._pos);
-        _this.imgElement.addEventListener("load", function () { return _this._onLoaded(); });
-        return _this;
-    }
-    Object.defineProperty(ImgDragZoomEle.prototype, "pos", {
-        get: function () { return this._pos; },
-        enumerable: true,
-        configurable: true
-    });
-    ImgDragZoomEle.prototype.toModel = function () {
-        return new ImgDragZoomEleModel(this._pos.toModel(), this.zoomer.size.toModel(), _super.prototype.toModel.call(this));
-    };
-    ImgDragZoomEle.fromModel = function (model, onRemoved) {
-        var img = new ImgDragZoomEle(model.imgEleModel.src, onRemoved);
-        img._pos.x = model.pos.x;
-        img._pos.y = model.pos.y;
-        img.dragger.setPos(img._pos);
-        img.zoomer.setSize(new point_1.Point(model.size.x, model.size.y));
-        return img;
-    };
-    ImgDragZoomEle.prototype._onLoaded = function () {
-        if (this.zoomer.size.x === 0) {
-            this.zoomer.setSize(new point_1.Point(this.imgElement.naturalWidth, this.imgElement.naturalHeight));
-        }
-    };
-    return ImgDragZoomEle;
-}(img_ele_1.ImgEle));
-exports.ImgDragZoomEle = ImgDragZoomEle;
-var ImgDragZoomEleModel = (function (_super) {
-    __extends(ImgDragZoomEleModel, _super);
-    function ImgDragZoomEleModel(pos, size, imgEleModel) {
-        var _this = _super.call(this) || this;
-        _this.pos = pos;
-        _this.size = size;
-        _this.imgEleModel = imgEleModel;
-        return _this;
-    }
-    return ImgDragZoomEleModel;
-}(model_1.Model));
-exports.ImgDragZoomEleModel = ImgDragZoomEleModel;
-
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = __webpack_require__(1);
-var model_1 = __webpack_require__(2);
+var ele_1 = __webpack_require__(0);
+var model_1 = __webpack_require__(3);
 var ImgEle = (function (_super) {
     __extends(ImgEle, _super);
     function ImgEle(src, _onRemoved) {
@@ -628,7 +661,7 @@ exports.ImgEleModel = ImgEleModel;
 
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -644,10 +677,10 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var video_ele_1 = __webpack_require__(12);
-var point_1 = __webpack_require__(0);
-var ele_dragger_1 = __webpack_require__(3);
-var ele_zoomer_1 = __webpack_require__(4);
+var video_ele_1 = __webpack_require__(11);
+var point_1 = __webpack_require__(1);
+var ele_dragger_1 = __webpack_require__(4);
+var ele_zoomer_1 = __webpack_require__(5);
 var VideoDragZoomEle = (function (_super) {
     __extends(VideoDragZoomEle, _super);
     function VideoDragZoomEle(src, onRemoved) {
@@ -673,7 +706,7 @@ exports.VideoDragZoomEle = VideoDragZoomEle;
 
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -689,7 +722,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = __webpack_require__(1);
+var ele_1 = __webpack_require__(0);
 var VideoEle = (function (_super) {
     __extends(VideoEle, _super);
     function VideoEle(src, _onRemoved) {
@@ -733,7 +766,7 @@ exports.VideoEle = VideoEle;
 
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -749,9 +782,9 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var div_ele_1 = __webpack_require__(6);
-var point_1 = __webpack_require__(0);
-var zoom1d_1 = __webpack_require__(5);
+var div_ele_1 = __webpack_require__(7);
+var point_1 = __webpack_require__(1);
+var zoom1d_1 = __webpack_require__(6);
 /**
  * The intent of this element is to fill the whole screen and allow child elemements to
  * be drug around google maps style... but without the tile-loading nature.
@@ -767,6 +800,10 @@ var AxisEle = (function (_super) {
         _this._mousePos = new point_1.Point();
         _this._dragging = false;
         _this._veil = new div_ele_1.DivEle();
+        // todo: the "coast" function is copied between here and ele-dragger.ts. Need to combine these so we don't repeat the code.
+        _this._timerHandle = -1;
+        _this._velocity = new point_1.Point(0, 0);
+        _this._velocityAverager = new point_1.PointAverager();
         _this._setupStyle();
         _this._setupVeil();
         _this._setupKeyDownEventListener();
@@ -810,15 +847,24 @@ var AxisEle = (function (_super) {
     };
     AxisEle.prototype._mouseDown = function (e) {
         this._dragging = true;
+        this._velocityAverager.clear();
+        this._velocity = new point_1.Point();
         e.preventDefault();
         e.stopPropagation();
     };
     AxisEle.prototype._mouseUp = function (e) {
+        var _this = this;
         this._dragging = false;
+        this._velocity = this._velocityAverager.average;
+        if (this._timerHandle !== -1) {
+            clearTimeout(this._timerHandle);
+        }
+        this._timerHandle = setInterval(function () { return _this._coast(); }, 13);
         e.preventDefault();
         e.stopPropagation();
     };
     AxisEle.prototype._mouseMove = function (e) {
+        var _this = this;
         var oldMousePos = this._mousePos.copy();
         this._mousePos.updateFromMouseEvent(e);
         if (this._dragging) {
@@ -827,9 +873,35 @@ var AxisEle = (function (_super) {
                 child.pos.bumpBy(delta_1);
                 child.dragger.setPos(child.pos);
             });
+            if (this._timerHandle !== -1) {
+                clearTimeout(this._timerHandle);
+            }
+            this._timerHandle = setTimeout(function () { return _this._dragTimeout(); }, 100);
+            this._velocityAverager.push(delta_1);
         }
         e.preventDefault();
         e.stopPropagation();
+    };
+    AxisEle.prototype._dragTimeout = function () {
+        this._velocityAverager.clear();
+    };
+    AxisEle.prototype._coast = function () {
+        var _this = this;
+        var xVel = Math.abs(this._velocity.x);
+        var yVel = Math.abs(this._velocity.y);
+        if (xVel < 0.01 && yVel < 0.01) {
+            clearInterval(this._timerHandle);
+            this._timerHandle = -1;
+            this._velocity = new point_1.Point(0, 0);
+        }
+        else {
+            this.children.forEach(function (child) {
+                child.pos.bumpBy(_this._velocity);
+                child.dragger.setPos(child.pos);
+            });
+            this._velocity.x *= 0.95;
+            this._velocity.y *= 0.95;
+        }
     };
     AxisEle.prototype._mouseWheel = function (e) {
         var _this = this;
@@ -868,7 +940,7 @@ exports.AxisEle = AxisEle;
 
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -902,7 +974,7 @@ exports.WebApp = WebApp;
 
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -918,10 +990,10 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var div_ele_1 = __webpack_require__(6);
-var button_ele_1 = __webpack_require__(8);
+var div_ele_1 = __webpack_require__(7);
+var button_ele_1 = __webpack_require__(15);
 var text_area_ele_1 = __webpack_require__(16);
-var img_drag_zoom_ele_1 = __webpack_require__(9);
+var img_drag_zoom_ele_1 = __webpack_require__(2);
 var Controls = (function (_super) {
     __extends(Controls, _super);
     function Controls(cookieName, axis, onRemove) {
@@ -986,6 +1058,44 @@ exports.Controls = Controls;
 
 
 /***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var ele_1 = __webpack_require__(0);
+var ButtonEle = (function (_super) {
+    __extends(ButtonEle, _super);
+    function ButtonEle(buttonText, _onClicked) {
+        var _this = _super.call(this) || this;
+        _this._onClicked = _onClicked;
+        _this.target = document.createElement("button");
+        _this.buttonElement.innerHTML = buttonText;
+        _this.buttonElement.onclick = _this._onClicked;
+        return _this;
+    }
+    Object.defineProperty(ButtonEle.prototype, "buttonElement", {
+        get: function () { return this.target; },
+        enumerable: true,
+        configurable: true
+    });
+    return ButtonEle;
+}(ele_1.Ele));
+exports.ButtonEle = ButtonEle;
+
+
+/***/ }),
 /* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1002,7 +1112,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = __webpack_require__(1);
+var ele_1 = __webpack_require__(0);
 var TextAreaEle = (function (_super) {
     __extends(TextAreaEle, _super);
     function TextAreaEle() {

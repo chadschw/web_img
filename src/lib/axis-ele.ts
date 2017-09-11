@@ -1,6 +1,6 @@
 
 import { DivEle } from "./div-ele";
-import { Point } from "./point";
+import { Point, PointAverager } from "./point";
 import { ImgDragZoomEle } from "./img-drag-zoom-ele";
 import { VideoDragZoomEle } from "./video-drag-zoom-ele";
 import { Zoom1d } from "./zoom1d";
@@ -65,12 +65,17 @@ export class AxisEle extends DivEle {
 
     _mouseDown(e: MouseEvent) {
         this._dragging = true;
+        this._velocityAverager.clear();
+        this._velocity = new Point();
         e.preventDefault();
         e.stopPropagation();
     }
 
     _mouseUp(e: MouseEvent) {
         this._dragging = false;
+        this._velocity = this._velocityAverager.average;
+        if (this._timerHandle !== -1) { clearTimeout(this._timerHandle); }
+        this._timerHandle = setInterval(() => this._coast(), 13);
         e.preventDefault();
         e.stopPropagation();
     }
@@ -85,10 +90,36 @@ export class AxisEle extends DivEle {
                 child.pos.bumpBy(delta);
                 child.dragger.setPos(child.pos);
             });
+
+            if (this._timerHandle !== -1) { clearTimeout(this._timerHandle); }
+            this._timerHandle = setTimeout(()=>this._dragTimeout(), 100);
+            this._velocityAverager.push(delta);
         }
 
         e.preventDefault();
         e.stopPropagation();
+    }
+
+    private _dragTimeout() {
+        this._velocityAverager.clear();
+    }
+
+    private _coast() {
+        let xVel = Math.abs(this._velocity.x);
+        let yVel = Math.abs(this._velocity.y);
+
+        if (xVel < 0.01 && yVel < 0.01) {
+            clearInterval(this._timerHandle);
+            this._timerHandle = -1;
+            this._velocity = new Point(0,0);
+        } else {
+            this.children.forEach((child: ImgDragZoomEle | VideoDragZoomEle) => {
+                child.pos.bumpBy(this._velocity);
+                child.dragger.setPos(child.pos);
+            });
+            this._velocity.x *= 0.95;
+            this._velocity.y *= 0.95;
+        }
     }
 
     _mouseWheel(e: WheelEvent) {
@@ -135,4 +166,9 @@ export class AxisEle extends DivEle {
     _mousePos: Point = new Point();
     _dragging: boolean = false;
     _veil: DivEle = new DivEle();
+
+    // todo: the "coast" function is copied between here and ele-dragger.ts. Need to combine these so we don't repeat the code.
+    private _timerHandle = -1;
+    private _velocity: Point = new Point(0,0);
+    private _velocityAverager = new PointAverager();
 }

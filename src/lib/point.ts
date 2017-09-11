@@ -28,3 +28,37 @@ export class Point {
         return this.copy();
     }
 }
+
+export class PointAverager {
+    get average(): Point {
+        let xSum = 0;
+        let ySum = 0;
+
+        this._averageBuffer.forEach((point: Point) => {
+            xSum += point.x;
+            ySum += point.y;
+        });
+
+        if (this._averageBuffer.length === 0) {
+            return new Point();
+        } else {
+            return new Point(
+                xSum / this._averageBuffer.length, 
+                ySum / this._averageBuffer.length);
+        }
+    }
+
+    push(p: Point) {
+        this._averageBuffer.push(p.copy());
+        if (this._averageBuffer.length > this._averageBufferSize) {
+            this._averageBuffer.splice(0, 1);
+        }
+    }
+
+    clear() {
+        this._averageBuffer = [];
+    }
+
+    private _averageBuffer: Array<Point> = [];
+    private _averageBufferSize = 10;
+}
