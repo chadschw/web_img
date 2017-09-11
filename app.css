@@ -2,6 +2,7 @@
 body {
     background-color: #1e1e1e;
     overflow: hidden;
+    font-size: 62.5%;
 }
 
 .axis-ele {
@@ -35,4 +36,14 @@ img {
 
 video {
     z-index: 1;
+}
+
+div.controls {
+    background-color: gray;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 10;
 }

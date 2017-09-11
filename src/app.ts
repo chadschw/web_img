@@ -9,39 +9,27 @@ import {AxisEle} from "./lib/axis-ele";
 import {WebApp} from "./lib/web-app";
 import {Model} from "./lib/model";
 
+import {Controls} from "./controls";
+
 class WebImgApp extends WebApp {
     
+    cookieName = "web-img-save-data";
+
+    private _removeImgEle: (imgToRemove: ImgEle) => void = (imgToRemove: ImgEle)=>this._axis.removeChild(imgToRemove);
     private _axis = new AxisEle();
-    //private _imgSrcInput = new TextInputEle();
-    //private _loadImgButton = new ButtonEle("Load Img", () => this.onLoadImgButtonClick());
-    //private _videoSrcInput = new TextInputEle();
-    //private _loadVideoButton = new ButtonEle("Load Video", () => this.onLoadVideoButtonClick());
-    private _saveButton = new ButtonEle("Save", () => this.onSave());
-    private _loadButton = new ButtonEle("Load", () => this.onLoad());
+    private _controls = new Controls(this.cookieName, this._axis, this._removeImgEle);
     
     constructor() {
         super();
 
-        // todo: fix this craziness!
-        this._saveButton.style.position = "relative";
-        this._loadButton.style.position = "relative";
-
-        this._saveButton.style.zIndex = "10";
-        this._loadButton.style.zIndex = "10";
-        // end craziness.
-
         this.addChildren([
             this._axis,
-            this._saveButton,
-            this._loadButton
+            this._controls,
         ]);
 
-        this._removeImgEle = (imgToRemove: ImgEle)=>this._axis.removeChild(imgToRemove);
-
         window.addEventListener("paste", (e) => this._onPaste(e));
+        window.addEventListener("keydown", (e: KeyboardEvent)=> this.toggleControls(e));
     }
-
-    private _removeImgEle: (imgToRemove: ImgEle) => void;
 
     private _onPaste(e: any) {
         let src: string = e.clipboardData.getData("text/plain");
@@ -74,34 +62,15 @@ class WebImgApp extends WebApp {
         }
     }
 
-    private onSave() {
-        let models: Array<Model> = [];
-        this._axis.children.forEach((child: ImgDragZoomEle) => {
-            models.push(child.toModel());
-        });
+    private toggleControls(e: KeyboardEvent) {
+        if (e.key !== " ") { return; }
 
-        // alert(JSON.stringify(models));
-        localStorage[this.cookieName] = JSON.stringify(models);
-    }
-
-    private onLoad() {
-        if (!localStorage[this.cookieName]) {
-            return;
+        if (this._controls.target.style.display === "none") {
+            this._controls.target.style.display = "block";
+        } else {
+            this._controls.target.style.display = "none";
         }
-
-        // ugly.
-        while(this._axis.children.length > 0) {
-            this._axis.children[0].removeChild(this._axis.children[0]);
-        }
-
-        let models: Array<Model> = JSON.parse(localStorage[this.cookieName]);
-        models.forEach((model: ImgDragZoomEleModel) => {
-            let ele: ImgDragZoomEle = ImgDragZoomEle.fromModel(model, this._removeImgEle);
-            this._axis.addChild(ele);
-        });
     }
-
-    cookieName = "web-mg-save-data";
 }
 
 window.onload = () => {

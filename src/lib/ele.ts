@@ -19,7 +19,7 @@ export class Ele {
     }
 
     addChildren(children: Array<Ele>) {
-        children.forEach(this.addChild);
+        children.forEach((child: Ele) => this.addChild(child));
     }
 
     removeChild(child: Ele) {
@@ -31,7 +31,7 @@ export class Ele {
     _unload() {
         this.children.forEach(child => child.unload);
         this.children = [];
-        this._unload();
+        this.unload();
     }
 
     // Derived classes override this if you need to cancel any timers

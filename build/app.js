@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -127,7 +127,8 @@ var Ele = (function () {
         this.target.appendChild(child.target);
     };
     Ele.prototype.addChildren = function (children) {
-        children.forEach(this.addChild);
+        var _this = this;
+        children.forEach(function (child) { return _this.addChild(child); });
     };
     Ele.prototype.removeChild = function (child) {
         this.target.removeChild(child.target);
@@ -137,7 +138,7 @@ var Ele = (function () {
     Ele.prototype._unload = function () {
         this.children.forEach(function (child) { return child.unload; });
         this.children = [];
-        this._unload();
+        this.unload();
     };
     // Derived classes override this if you need to cancel any timers
     Ele.prototype.unload = function () {
@@ -164,6 +165,130 @@ exports.Model = Model;
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var point_1 = __webpack_require__(0);
+var EleDragger = (function () {
+    function EleDragger(_ele, _pos) {
+        var _this = this;
+        this._ele = _ele;
+        this._pos = _pos;
+        this._px = "px";
+        this._mousePos = new point_1.Point(0, 0);
+        this._dragging = false;
+        this._ele.style.display = "block";
+        this._ele.style.position = "absolute";
+        this.setPos(this._pos);
+        var move = function (e) { return _this._onMouseMove(e); };
+        var down = function (e) { return _this._onMouseDown(e); };
+        var up = function (e) { return _this._onMouseUp(e); };
+        this._ele.target.addEventListener("mousemove", move);
+        this._ele.target.addEventListener("mousedown", down);
+        this._ele.target.addEventListener("mouseup", up);
+    }
+    EleDragger.prototype.setPos = function (pos) {
+        this._ele.style.left = pos.x + this._px;
+        this._ele.style.top = pos.y + this._px;
+    };
+    EleDragger.prototype._onMouseMove = function (e) {
+        var oldMousePos = this._mousePos.copy();
+        this._mousePos.updateFromMouseEvent(e);
+        if (this._dragging) {
+            var delta = this._mousePos.subtract(oldMousePos);
+            this._pos.bumpBy(delta);
+            this.setPos(this._pos);
+        }
+        e.preventDefault();
+        e.stopPropagation();
+    };
+    EleDragger.prototype._onMouseDown = function (e) {
+        this._dragging = true;
+        e.preventDefault();
+        e.stopPropagation();
+    };
+    EleDragger.prototype._onMouseUp = function (e) {
+        this._dragging = false;
+        e.preventDefault();
+        e.stopPropagation();
+    };
+    return EleDragger;
+}());
+exports.EleDragger = EleDragger;
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var point_1 = __webpack_require__(0);
+var zoom1d_1 = __webpack_require__(5);
+var EleZoomer = (function () {
+    function EleZoomer(_ele, _pos) {
+        var _this = this;
+        this._ele = _ele;
+        this._pos = _pos;
+        this._size = new point_1.Point(0, 0);
+        this._mousePos = new point_1.Point(0, 0);
+        this._px = "px";
+        this._ele.style.display = "block";
+        this._ele.style.position = "absolute";
+        this._ele.target.addEventListener("mousemove", function (e) { return _this._onMouseMove(e); });
+        this._ele.target.addEventListener("mousewheel", function (e) { return _this._onMouseWheel(e); });
+    }
+    Object.defineProperty(EleZoomer.prototype, "size", {
+        get: function () { return this._size; },
+        enumerable: true,
+        configurable: true
+    });
+    EleZoomer.prototype.setSize = function (size) {
+        this._size = size;
+        this._ele.style.width = size.x + this._px;
+        this._ele.style.height = size.y + this._px;
+    };
+    EleZoomer.prototype._onMouseMove = function (e) {
+        this._mousePos.updateFromMouseEvent(e);
+        e.preventDefault();
+        e.stopPropagation();
+    };
+    EleZoomer.prototype._onMouseWheel = function (e) {
+        var delta = (e.wheelDeltaY > 0) ? 1.1 : 0.9;
+        this.zoom(delta, this._mousePos);
+        e.preventDefault();
+        e.stopPropagation();
+    };
+    EleZoomer.prototype.zoom = function (zoomRatio, zoomPoint) {
+        var x = this._mousePos.x;
+        var y = this._mousePos.y;
+        var x1 = this._pos.x;
+        var y1 = this._pos.y;
+        var x2 = x1 + this.size.x;
+        var y2 = y1 + this.size.y;
+        var newX1X2 = zoom1d_1.Zoom1d.zoom(x, x1, x2, zoomRatio);
+        var newY1Y2 = zoom1d_1.Zoom1d.zoom(y, y1, y2, zoomRatio);
+        this._pos.x = newX1X2[0];
+        this._pos.y = newY1Y2[0];
+        this._setPos(this._pos);
+        this.size.x = newX1X2[1] - newX1X2[0];
+        this.size.y = newY1Y2[1] - newY1Y2[0];
+        this.setSize(this.size);
+    };
+    EleZoomer.prototype._setPos = function (pos) {
+        this._ele.style.left = pos.x + this._px;
+        this._ele.style.top = pos.y + this._px;
+    };
+    return EleZoomer;
+}());
+exports.EleZoomer = EleZoomer;
+
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -203,7 +328,7 @@ exports.Zoom1d = Zoom1d;
 
 
 /***/ }),
-/* 4 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -219,36 +344,55 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var button_ele_1 = __webpack_require__(5);
-var img_drag_zoom_ele_1 = __webpack_require__(6);
-var video_drag_zoom_ele_1 = __webpack_require__(13);
-var axis_ele_1 = __webpack_require__(10);
-var web_app_1 = __webpack_require__(12);
+var ele_1 = __webpack_require__(1);
+var DivEle = (function (_super) {
+    __extends(DivEle, _super);
+    function DivEle() {
+        var _this = _super.call(this) || this;
+        _this.target = document.createElement("div");
+        return _this;
+    }
+    return DivEle;
+}(ele_1.Ele));
+exports.DivEle = DivEle;
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var img_drag_zoom_ele_1 = __webpack_require__(9);
+var video_drag_zoom_ele_1 = __webpack_require__(11);
+var axis_ele_1 = __webpack_require__(13);
+var web_app_1 = __webpack_require__(14);
+var controls_1 = __webpack_require__(15);
 var WebImgApp = (function (_super) {
     __extends(WebImgApp, _super);
     function WebImgApp() {
         var _this = _super.call(this) || this;
+        _this.cookieName = "web-img-save-data";
+        _this._removeImgEle = function (imgToRemove) { return _this._axis.removeChild(imgToRemove); };
         _this._axis = new axis_ele_1.AxisEle();
-        //private _imgSrcInput = new TextInputEle();
-        //private _loadImgButton = new ButtonEle("Load Img", () => this.onLoadImgButtonClick());
-        //private _videoSrcInput = new TextInputEle();
-        //private _loadVideoButton = new ButtonEle("Load Video", () => this.onLoadVideoButtonClick());
-        _this._saveButton = new button_ele_1.ButtonEle("Save", function () { return _this.onSave(); });
-        _this._loadButton = new button_ele_1.ButtonEle("Load", function () { return _this.onLoad(); });
-        _this.cookieName = "web-mg-save-data";
-        // todo: fix this craziness!
-        _this._saveButton.style.position = "relative";
-        _this._loadButton.style.position = "relative";
-        _this._saveButton.style.zIndex = "10";
-        _this._loadButton.style.zIndex = "10";
-        // end craziness.
+        _this._controls = new controls_1.Controls(_this.cookieName, _this._axis, _this._removeImgEle);
         _this.addChildren([
             _this._axis,
-            _this._saveButton,
-            _this._loadButton
+            _this._controls,
         ]);
-        _this._removeImgEle = function (imgToRemove) { return _this._axis.removeChild(imgToRemove); };
         window.addEventListener("paste", function (e) { return _this._onPaste(e); });
+        window.addEventListener("keydown", function (e) { return _this.toggleControls(e); });
         return _this;
     }
     WebImgApp.prototype._onPaste = function (e) {
@@ -280,28 +424,16 @@ var WebImgApp = (function (_super) {
             this._axis.addDragZoomEle(new video_drag_zoom_ele_1.VideoDragZoomEle(src, function (videoToRemove) { return _this.removeChild(videoToRemove); }));
         }
     };
-    WebImgApp.prototype.onSave = function () {
-        var models = [];
-        this._axis.children.forEach(function (child) {
-            models.push(child.toModel());
-        });
-        // alert(JSON.stringify(models));
-        localStorage[this.cookieName] = JSON.stringify(models);
-    };
-    WebImgApp.prototype.onLoad = function () {
-        var _this = this;
-        if (!localStorage[this.cookieName]) {
+    WebImgApp.prototype.toggleControls = function (e) {
+        if (e.key !== " ") {
             return;
         }
-        // ugly.
-        while (this._axis.children.length > 0) {
-            this._axis.children[0].removeChild(this._axis.children[0]);
+        if (this._controls.target.style.display === "none") {
+            this._controls.target.style.display = "block";
         }
-        var models = JSON.parse(localStorage[this.cookieName]);
-        models.forEach(function (model) {
-            var ele = img_drag_zoom_ele_1.ImgDragZoomEle.fromModel(model, _this._removeImgEle);
-            _this._axis.addChild(ele);
-        });
+        else {
+            this._controls.target.style.display = "none";
+        }
     };
     return WebImgApp;
 }(web_app_1.WebApp));
@@ -316,7 +448,7 @@ window.onload = function () {
 
 
 /***/ }),
-/* 5 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -354,7 +486,7 @@ exports.ButtonEle = ButtonEle;
 
 
 /***/ }),
-/* 6 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -370,10 +502,10 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var img_ele_1 = __webpack_require__(7);
+var img_ele_1 = __webpack_require__(10);
 var point_1 = __webpack_require__(0);
-var ele_dragger_1 = __webpack_require__(8);
-var ele_zoomer_1 = __webpack_require__(9);
+var ele_dragger_1 = __webpack_require__(3);
+var ele_zoomer_1 = __webpack_require__(4);
 var model_1 = __webpack_require__(2);
 var ImgDragZoomEle = (function (_super) {
     __extends(ImgDragZoomEle, _super);
@@ -425,7 +557,7 @@ exports.ImgDragZoomEleModel = ImgDragZoomEleModel;
 
 
 /***/ }),
-/* 7 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -496,131 +628,7 @@ exports.ImgEleModel = ImgEleModel;
 
 
 /***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var point_1 = __webpack_require__(0);
-var EleDragger = (function () {
-    function EleDragger(_ele, _pos) {
-        var _this = this;
-        this._ele = _ele;
-        this._pos = _pos;
-        this._px = "px";
-        this._mousePos = new point_1.Point(0, 0);
-        this._dragging = false;
-        this._ele.style.display = "block";
-        this._ele.style.position = "absolute";
-        this.setPos(this._pos);
-        var move = function (e) { return _this._onMouseMove(e); };
-        var down = function (e) { return _this._onMouseDown(e); };
-        var up = function (e) { return _this._onMouseUp(e); };
-        this._ele.target.addEventListener("mousemove", move);
-        this._ele.target.addEventListener("mousedown", down);
-        this._ele.target.addEventListener("mouseup", up);
-    }
-    EleDragger.prototype.setPos = function (pos) {
-        this._ele.style.left = pos.x + this._px;
-        this._ele.style.top = pos.y + this._px;
-    };
-    EleDragger.prototype._onMouseMove = function (e) {
-        var oldMousePos = this._mousePos.copy();
-        this._mousePos.updateFromMouseEvent(e);
-        if (this._dragging) {
-            var delta = this._mousePos.subtract(oldMousePos);
-            this._pos.bumpBy(delta);
-            this.setPos(this._pos);
-        }
-        e.preventDefault();
-        e.stopPropagation();
-    };
-    EleDragger.prototype._onMouseDown = function (e) {
-        this._dragging = true;
-        e.preventDefault();
-        e.stopPropagation();
-    };
-    EleDragger.prototype._onMouseUp = function (e) {
-        this._dragging = false;
-        e.preventDefault();
-        e.stopPropagation();
-    };
-    return EleDragger;
-}());
-exports.EleDragger = EleDragger;
-
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var point_1 = __webpack_require__(0);
-var zoom1d_1 = __webpack_require__(3);
-var EleZoomer = (function () {
-    function EleZoomer(_ele, _pos) {
-        var _this = this;
-        this._ele = _ele;
-        this._pos = _pos;
-        this._size = new point_1.Point(0, 0);
-        this._mousePos = new point_1.Point(0, 0);
-        this._px = "px";
-        this._ele.style.display = "block";
-        this._ele.style.position = "absolute";
-        this._ele.target.addEventListener("mousemove", function (e) { return _this._onMouseMove(e); });
-        this._ele.target.addEventListener("mousewheel", function (e) { return _this._onMouseWheel(e); });
-    }
-    Object.defineProperty(EleZoomer.prototype, "size", {
-        get: function () { return this._size; },
-        enumerable: true,
-        configurable: true
-    });
-    EleZoomer.prototype.setSize = function (size) {
-        this._size = size;
-        this._ele.style.width = size.x + this._px;
-        this._ele.style.height = size.y + this._px;
-    };
-    EleZoomer.prototype._onMouseMove = function (e) {
-        this._mousePos.updateFromMouseEvent(e);
-        e.preventDefault();
-        e.stopPropagation();
-    };
-    EleZoomer.prototype._onMouseWheel = function (e) {
-        var delta = (e.wheelDeltaY > 0) ? 1.1 : 0.9;
-        this.zoom(delta, this._mousePos);
-        e.preventDefault();
-        e.stopPropagation();
-    };
-    EleZoomer.prototype.zoom = function (zoomRatio, zoomPoint) {
-        var x = this._mousePos.x;
-        var y = this._mousePos.y;
-        var x1 = this._pos.x;
-        var y1 = this._pos.y;
-        var x2 = x1 + this.size.x;
-        var y2 = y1 + this.size.y;
-        var newX1X2 = zoom1d_1.Zoom1d.zoom(x, x1, x2, zoomRatio);
-        var newY1Y2 = zoom1d_1.Zoom1d.zoom(y, y1, y2, zoomRatio);
-        this._pos.x = newX1X2[0];
-        this._pos.y = newY1Y2[0];
-        this._setPos(this._pos);
-        this.size.x = newX1X2[1] - newX1X2[0];
-        this.size.y = newY1Y2[1] - newY1Y2[0];
-        this.setSize(this.size);
-    };
-    EleZoomer.prototype._setPos = function (pos) {
-        this._ele.style.left = pos.x + this._px;
-        this._ele.style.top = pos.y + this._px;
-    };
-    return EleZoomer;
-}());
-exports.EleZoomer = EleZoomer;
-
-
-/***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -636,9 +644,114 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var div_ele_1 = __webpack_require__(11);
+var video_ele_1 = __webpack_require__(12);
 var point_1 = __webpack_require__(0);
-var zoom1d_1 = __webpack_require__(3);
+var ele_dragger_1 = __webpack_require__(3);
+var ele_zoomer_1 = __webpack_require__(4);
+var VideoDragZoomEle = (function (_super) {
+    __extends(VideoDragZoomEle, _super);
+    function VideoDragZoomEle(src, onRemoved) {
+        if (src === void 0) { src = null; }
+        var _this = _super.call(this, src, onRemoved) || this;
+        _this._pos = new point_1.Point(0, 0);
+        _this.dragger = new ele_dragger_1.EleDragger(_this, _this._pos);
+        _this.zoomer = new ele_zoomer_1.EleZoomer(_this, _this._pos);
+        _this.videoElement.addEventListener("loadeddata", function () { return _this._onLoaded(); });
+        return _this;
+    }
+    Object.defineProperty(VideoDragZoomEle.prototype, "pos", {
+        get: function () { return this._pos; },
+        enumerable: true,
+        configurable: true
+    });
+    VideoDragZoomEle.prototype._onLoaded = function () {
+        this.zoomer.setSize(new point_1.Point(this.videoElement.videoWidth, this.videoElement.videoHeight));
+    };
+    return VideoDragZoomEle;
+}(video_ele_1.VideoEle));
+exports.VideoDragZoomEle = VideoDragZoomEle;
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var ele_1 = __webpack_require__(1);
+var VideoEle = (function (_super) {
+    __extends(VideoEle, _super);
+    function VideoEle(src, _onRemoved) {
+        if (src === void 0) { src = null; }
+        var _this = _super.call(this) || this;
+        _this._onRemoved = _onRemoved;
+        _this.target = document.createElement("video");
+        _this.src = src;
+        _this.videoElement.addEventListener("contextmenu", function (e) { return _this._onContextMenu(e); });
+        return _this;
+    }
+    Object.defineProperty(VideoEle.prototype, "videoElement", {
+        get: function () { return this.target; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(VideoEle.prototype, "src", {
+        set: function (src) {
+            if (src === null) {
+                this.videoElement.style.display = "hidden";
+            }
+            else {
+                this.videoElement.style.display = "block";
+                this.videoElement.src = src;
+                //this.videoElement.autoplay = true;
+                this.videoElement.controls = true;
+                this.videoElement.loop = true;
+                this.videoElement.playbackRate = 1.0;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    VideoEle.prototype._onContextMenu = function (e) {
+        this._onRemoved(this);
+        e.preventDefault();
+    };
+    return VideoEle;
+}(ele_1.Ele));
+exports.VideoEle = VideoEle;
+
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var div_ele_1 = __webpack_require__(6);
+var point_1 = __webpack_require__(0);
+var zoom1d_1 = __webpack_require__(5);
 /**
  * The intent of this element is to fill the whole screen and allow child elemements to
  * be drug around google maps style... but without the tile-loading nature.
@@ -669,6 +782,7 @@ var AxisEle = (function (_super) {
     };
     AxisEle.prototype._setupVeilStyle = function () {
         this._veil.target.classList.add("axis-veil-ele");
+        this._veil.style.zIndex = "6";
     };
     AxisEle.prototype._createVeilEventListeners = function () {
         var _this = this;
@@ -754,37 +868,7 @@ exports.AxisEle = AxisEle;
 
 
 /***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = __webpack_require__(1);
-var DivEle = (function (_super) {
-    __extends(DivEle, _super);
-    function DivEle() {
-        var _this = _super.call(this) || this;
-        _this.target = document.createElement("div");
-        return _this;
-    }
-    return DivEle;
-}(ele_1.Ele));
-exports.DivEle = DivEle;
-
-
-/***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -818,7 +902,7 @@ exports.WebApp = WebApp;
 
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -834,36 +918,75 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var video_ele_1 = __webpack_require__(14);
-var point_1 = __webpack_require__(0);
-var ele_dragger_1 = __webpack_require__(8);
-var ele_zoomer_1 = __webpack_require__(9);
-var VideoDragZoomEle = (function (_super) {
-    __extends(VideoDragZoomEle, _super);
-    function VideoDragZoomEle(src, onRemoved) {
-        if (src === void 0) { src = null; }
-        var _this = _super.call(this, src, onRemoved) || this;
-        _this._pos = new point_1.Point(0, 0);
-        _this.dragger = new ele_dragger_1.EleDragger(_this, _this._pos);
-        _this.zoomer = new ele_zoomer_1.EleZoomer(_this, _this._pos);
-        _this.videoElement.addEventListener("loadeddata", function () { return _this._onLoaded(); });
+var div_ele_1 = __webpack_require__(6);
+var button_ele_1 = __webpack_require__(8);
+var text_area_ele_1 = __webpack_require__(16);
+var img_drag_zoom_ele_1 = __webpack_require__(9);
+var Controls = (function (_super) {
+    __extends(Controls, _super);
+    function Controls(cookieName, axis, onRemove) {
+        var _this = _super.call(this) || this;
+        _this.cookieName = cookieName;
+        _this.axis = axis;
+        _this.onRemove = onRemove;
+        _this._textArea = new text_area_ele_1.TextAreaEle();
+        _this.target.classList.add("controls");
+        _this.style.display = "none";
+        _this._textArea.textAreaElement.cols = 100;
+        _this._textArea.textAreaElement.rows = 5;
+        _this._textArea.text = localStorage[cookieName];
+        var textContainer = new div_ele_1.DivEle();
+        textContainer.style.padding = "10px";
+        textContainer.addChild(_this._textArea);
+        var buttonContainer = new div_ele_1.DivEle();
+        buttonContainer.style.padding = "10px";
+        buttonContainer.addChildren([
+            new button_ele_1.ButtonEle("Apply JSON", function () { return _this.applyJSON(); }),
+            new button_ele_1.ButtonEle("Save Chagnes", function () { return _this.saveChanges(); })
+        ]);
+        _this.addChildren([
+            textContainer,
+            buttonContainer
+        ]);
         return _this;
     }
-    Object.defineProperty(VideoDragZoomEle.prototype, "pos", {
-        get: function () { return this._pos; },
-        enumerable: true,
-        configurable: true
-    });
-    VideoDragZoomEle.prototype._onLoaded = function () {
-        this.zoomer.setSize(new point_1.Point(this.videoElement.videoWidth, this.videoElement.videoHeight));
+    Controls.prototype.applyJSON = function () {
+        var _this = this;
+        var newJSON = this._textArea.text;
+        if (newJSON.length === 0) {
+            newJSON = "[]";
+        }
+        var models;
+        try {
+            models = JSON.parse(newJSON);
+        }
+        catch (e) {
+            alert("Failed to parse JSON: " + e);
+        }
+        // ugly.
+        while (this.axis.children.length > 0) {
+            this.axis.children[0].removeChild(this.axis.children[0]);
+        }
+        models.forEach(function (model) {
+            var ele = img_drag_zoom_ele_1.ImgDragZoomEle.fromModel(model, _this.onRemove);
+            _this.axis.addChild(ele);
+        });
     };
-    return VideoDragZoomEle;
-}(video_ele_1.VideoEle));
-exports.VideoDragZoomEle = VideoDragZoomEle;
+    Controls.prototype.saveChanges = function () {
+        var models = [];
+        this.axis.children.forEach(function (child) {
+            models.push(child.toModel());
+        });
+        // alert(JSON.stringify(models));
+        localStorage[this.cookieName] = JSON.stringify(models);
+    };
+    return Controls;
+}(div_ele_1.DivEle));
+exports.Controls = Controls;
 
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -880,46 +1003,29 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var ele_1 = __webpack_require__(1);
-var VideoEle = (function (_super) {
-    __extends(VideoEle, _super);
-    function VideoEle(src, _onRemoved) {
-        if (src === void 0) { src = null; }
+var TextAreaEle = (function (_super) {
+    __extends(TextAreaEle, _super);
+    function TextAreaEle() {
         var _this = _super.call(this) || this;
-        _this._onRemoved = _onRemoved;
-        _this.target = document.createElement("video");
-        _this.src = src;
-        _this.videoElement.addEventListener("contextmenu", function (e) { return _this._onContextMenu(e); });
+        _this.target = document.createElement("textarea");
         return _this;
     }
-    Object.defineProperty(VideoEle.prototype, "videoElement", {
+    Object.defineProperty(TextAreaEle.prototype, "textAreaElement", {
         get: function () { return this.target; },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(VideoEle.prototype, "src", {
-        set: function (src) {
-            if (src === null) {
-                this.videoElement.style.display = "hidden";
-            }
-            else {
-                this.videoElement.style.display = "block";
-                this.videoElement.src = src;
-                //this.videoElement.autoplay = true;
-                this.videoElement.controls = true;
-                this.videoElement.loop = true;
-                this.videoElement.playbackRate = 1.0;
-            }
+    Object.defineProperty(TextAreaEle.prototype, "text", {
+        get: function () { return this.textAreaElement.value; },
+        set: function (t) {
+            this.textAreaElement.value = t;
         },
         enumerable: true,
         configurable: true
     });
-    VideoEle.prototype._onContextMenu = function (e) {
-        this._onRemoved(this);
-        e.preventDefault();
-    };
-    return VideoEle;
+    return TextAreaEle;
 }(ele_1.Ele));
-exports.VideoEle = VideoEle;
+exports.TextAreaEle = TextAreaEle;
 
 
 /***/ })

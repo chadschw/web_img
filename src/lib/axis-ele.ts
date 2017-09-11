@@ -36,6 +36,7 @@ export class AxisEle extends DivEle {
 
     private _setupVeilStyle() {
         this._veil.target.classList.add("axis-veil-ele");
+        this._veil.style.zIndex = "6";
     }
 
     private _createVeilEventListeners() {
