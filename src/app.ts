@@ -47,7 +47,8 @@ class WebImgApp extends WebApp {
             "png",
         ];
 
-        if (imgExtensions.filter(s => s === extension).length === 1) {
+        //if (imgExtensions.filter(s => s === extension).length === 1) {
+        if (imgExtensions.filter(s => src.includes(s)).length ===1) {
             this._axis.addDragZoomEle(new ImgDragZoomEle(src, this._removeImgEle));
             return;
         }

@@ -65,289 +65,250 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Ele = (function () {
-    function Ele() {
+class Ele {
+    constructor() {
         this.children = [];
     }
-    Object.defineProperty(Ele.prototype, "style", {
-        get: function () { return this.target.style; },
-        enumerable: true,
-        configurable: true
-    });
-    Ele.prototype.addChild = function (child) {
+    get style() { return this.target.style; }
+    addChild(child) {
         this.children.push(child);
         this.target.appendChild(child.target);
-    };
+    }
     // Add a child that isn't in the children list and won't get unloaded.
-    Ele.prototype.addUntrackedChild = function (child) {
+    addUntrackedChild(child) {
         this.target.appendChild(child.target);
-    };
-    Ele.prototype.addChildren = function (children) {
-        var _this = this;
-        children.forEach(function (child) { return _this.addChild(child); });
-    };
-    Ele.prototype.removeChild = function (child) {
+    }
+    addChildren(children) {
+        children.forEach((child) => this.addChild(child));
+    }
+    removeChild(child) {
         this.target.removeChild(child.target);
         this.children.splice(this.children.indexOf(child), 1);
         child._unload();
-    };
-    Ele.prototype._unload = function () {
-        this.children.forEach(function (child) { return child.unload; });
+    }
+    _unload() {
+        this.children.forEach(child => child.unload);
         this.children = [];
         this.unload();
-    };
+    }
     // Derived classes override this if you need to cancel any timers
-    Ele.prototype.unload = function () {
-    };
-    return Ele;
-}());
-exports.Ele = Ele;
+    unload() {
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Ele;
+
 
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Point = (function () {
-    function Point(x, y) {
-        if (x === void 0) { x = 0; }
-        if (y === void 0) { y = 0; }
+class Point {
+    constructor(x = 0, y = 0) {
         this.x = x;
         this.y = y;
     }
-    Point.prototype.updateFromMouseEvent = function (e) {
+    updateFromMouseEvent(e) {
         this.x = e.clientX;
         this.y = e.clientY;
-    };
-    Point.prototype.copy = function () {
+    }
+    copy() {
         return new Point(this.x, this.y);
-    };
-    Point.prototype.bumpBy = function (other) {
+    }
+    bumpBy(other) {
         this.x = this.x + other.x;
         this.y = this.y + other.y;
-    };
-    Point.prototype.add = function (other) {
+    }
+    add(other) {
         return new Point(this.x + other.x, this.y + other.y);
-    };
-    Point.prototype.subtract = function (other) {
+    }
+    subtract(other) {
         return new Point(this.x - other.x, this.y - other.y);
-    };
-    Point.prototype.toModel = function () {
+    }
+    toModel() {
         return this.copy();
-    };
-    return Point;
-}());
-exports.Point = Point;
-var PointAverager = (function () {
-    function PointAverager() {
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Point;
+
+class PointAverager {
+    constructor() {
         this._averageBuffer = [];
         this._averageBufferSize = 10;
     }
-    Object.defineProperty(PointAverager.prototype, "average", {
-        get: function () {
-            var xSum = 0;
-            var ySum = 0;
-            this._averageBuffer.forEach(function (point) {
-                xSum += point.x;
-                ySum += point.y;
-            });
-            if (this._averageBuffer.length === 0) {
-                return new Point();
-            }
-            else {
-                return new Point(xSum / this._averageBuffer.length, ySum / this._averageBuffer.length);
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    PointAverager.prototype.push = function (p) {
+    get average() {
+        let xSum = 0;
+        let ySum = 0;
+        this._averageBuffer.forEach((point) => {
+            xSum += point.x;
+            ySum += point.y;
+        });
+        if (this._averageBuffer.length === 0) {
+            return new Point();
+        }
+        else {
+            return new Point(xSum / this._averageBuffer.length, ySum / this._averageBuffer.length);
+        }
+    }
+    push(p) {
         this._averageBuffer.push(p.copy());
         if (this._averageBuffer.length > this._averageBufferSize) {
             this._averageBuffer.splice(0, 1);
         }
-    };
-    PointAverager.prototype.clear = function () {
+    }
+    clear() {
         this._averageBuffer = [];
-    };
-    return PointAverager;
-}());
-exports.PointAverager = PointAverager;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["b"] = PointAverager;
+
 
 
 /***/ }),
 /* 2 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__img_ele__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__point__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ele_dragger__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ele_zoomer__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__model__ = __webpack_require__(3);
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var img_ele_1 = __webpack_require__(9);
-var point_1 = __webpack_require__(1);
-var ele_dragger_1 = __webpack_require__(4);
-var ele_zoomer_1 = __webpack_require__(5);
-var model_1 = __webpack_require__(3);
-var ImgDragZoomEle = (function (_super) {
-    __extends(ImgDragZoomEle, _super);
-    function ImgDragZoomEle(src, onRemoved) {
-        if (src === void 0) { src = null; }
-        var _this = _super.call(this, src, onRemoved) || this;
-        _this._pos = new point_1.Point(0, 0);
-        _this.dragger = new ele_dragger_1.EleDragger(_this, _this._pos);
-        _this.zoomer = new ele_zoomer_1.EleZoomer(_this, _this._pos);
-        _this.imgElement.addEventListener("load", function () { return _this._onLoaded(); });
-        return _this;
+
+
+
+
+class ImgDragZoomEle extends __WEBPACK_IMPORTED_MODULE_0__img_ele__["a" /* ImgEle */] {
+    constructor(src = null, onRemoved) {
+        super(src, onRemoved);
+        this._pos = new __WEBPACK_IMPORTED_MODULE_1__point__["a" /* Point */](0, 0);
+        this.dragger = new __WEBPACK_IMPORTED_MODULE_2__ele_dragger__["a" /* EleDragger */](this, this._pos);
+        this.zoomer = new __WEBPACK_IMPORTED_MODULE_3__ele_zoomer__["a" /* EleZoomer */](this, this._pos);
+        this.imgElement.addEventListener("load", () => this._onLoaded());
     }
-    Object.defineProperty(ImgDragZoomEle.prototype, "pos", {
-        get: function () { return this._pos; },
-        enumerable: true,
-        configurable: true
-    });
-    ImgDragZoomEle.prototype.toModel = function () {
-        return new ImgDragZoomEleModel(this._pos.toModel(), this.zoomer.size.toModel(), _super.prototype.toModel.call(this));
-    };
-    ImgDragZoomEle.fromModel = function (model, onRemoved) {
-        var img = new ImgDragZoomEle(model.imgEleModel.src, onRemoved);
+    get pos() { return this._pos; }
+    toModel() {
+        return new ImgDragZoomEleModel(this._pos.toModel(), this.zoomer.size.toModel(), super.toModel());
+    }
+    static fromModel(model, onRemoved) {
+        let img = new ImgDragZoomEle(model.imgEleModel.src, onRemoved);
         img._pos.x = model.pos.x;
         img._pos.y = model.pos.y;
         img.dragger.setPos(img._pos);
-        img.zoomer.setSize(new point_1.Point(model.size.x, model.size.y));
+        img.zoomer.setSize(new __WEBPACK_IMPORTED_MODULE_1__point__["a" /* Point */](model.size.x, model.size.y));
         return img;
-    };
-    ImgDragZoomEle.prototype._onLoaded = function () {
-        if (this.zoomer.size.x === 0) {
-            this.zoomer.setSize(new point_1.Point(this.imgElement.naturalWidth, this.imgElement.naturalHeight));
-        }
-    };
-    return ImgDragZoomEle;
-}(img_ele_1.ImgEle));
-exports.ImgDragZoomEle = ImgDragZoomEle;
-var ImgDragZoomEleModel = (function (_super) {
-    __extends(ImgDragZoomEleModel, _super);
-    function ImgDragZoomEleModel(pos, size, imgEleModel) {
-        var _this = _super.call(this) || this;
-        _this.pos = pos;
-        _this.size = size;
-        _this.imgEleModel = imgEleModel;
-        return _this;
     }
-    return ImgDragZoomEleModel;
-}(model_1.Model));
-exports.ImgDragZoomEleModel = ImgDragZoomEleModel;
+    _onLoaded() {
+        if (this.zoomer.size.x === 0) {
+            this.zoomer.setSize(new __WEBPACK_IMPORTED_MODULE_1__point__["a" /* Point */](this.imgElement.naturalWidth, this.imgElement.naturalHeight));
+        }
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = ImgDragZoomEle;
+
+class ImgDragZoomEleModel extends __WEBPACK_IMPORTED_MODULE_4__model__["a" /* Model */] {
+    constructor(pos, size, imgEleModel) {
+        super();
+        this.pos = pos;
+        this.size = size;
+        this.imgEleModel = imgEleModel;
+    }
+}
+/* unused harmony export ImgDragZoomEleModel */
+
 
 
 /***/ }),
 /* 3 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+class Model {
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Model;
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var Model = (function () {
-    function Model() {
-    }
-    return Model;
-}());
-exports.Model = Model;
 
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__point__ = __webpack_require__(1);
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var point_1 = __webpack_require__(1);
-var EleDragger = (function () {
-    function EleDragger(_ele, _pos) {
-        var _this = this;
+class EleDragger {
+    constructor(_ele, _pos) {
         this._ele = _ele;
         this._pos = _pos;
         this._px = "px";
-        this._mousePos = new point_1.Point(0, 0);
+        this._mousePos = new __WEBPACK_IMPORTED_MODULE_0__point__["a" /* Point */](0, 0);
         this._dragging = false;
         // todo: the "coast" function is copied between here and axis-ele.ts. Need to combine these so we don't repeat the code.
         this._timerHandle = -1;
-        this._velocity = new point_1.Point(0, 0);
-        this._velocityAverager = new point_1.PointAverager();
+        this._velocity = new __WEBPACK_IMPORTED_MODULE_0__point__["a" /* Point */](0, 0);
+        this._velocityAverager = new __WEBPACK_IMPORTED_MODULE_0__point__["b" /* PointAverager */]();
         this._ele.style.display = "block";
         this._ele.style.position = "absolute";
         this.setPos(this._pos);
-        var move = function (e) { return _this._onMouseMove(e); };
-        var down = function (e) { return _this._onMouseDown(e); };
-        var up = function (e) { return _this._onMouseUp(e); };
+        let move = (e) => this._onMouseMove(e);
+        let down = (e) => this._onMouseDown(e);
+        let up = (e) => this._onMouseUp(e);
         this._ele.target.addEventListener("mousemove", move);
         this._ele.target.addEventListener("mousedown", down);
         this._ele.target.addEventListener("mouseup", up);
     }
-    EleDragger.prototype.setPos = function (pos) {
+    setPos(pos) {
         this._ele.style.left = pos.x + this._px;
         this._ele.style.top = pos.y + this._px;
-    };
-    EleDragger.prototype._onMouseMove = function (e) {
-        var _this = this;
-        var oldMousePos = this._mousePos.copy();
+    }
+    _onMouseMove(e) {
+        let oldMousePos = this._mousePos.copy();
         this._mousePos.updateFromMouseEvent(e);
         if (this._dragging) {
-            var delta = this._mousePos.subtract(oldMousePos);
+            let delta = this._mousePos.subtract(oldMousePos);
             this._pos.bumpBy(delta);
             this.setPos(this._pos);
             if (this._timerHandle !== -1) {
                 clearTimeout(this._timerHandle);
             }
-            this._timerHandle = setTimeout(function () { return _this._dragTimeout(); }, 100);
+            this._timerHandle = setTimeout(() => this._dragTimeout(), 100);
             this._velocityAverager.push(delta);
         }
         e.preventDefault();
         e.stopPropagation();
-    };
-    EleDragger.prototype._onMouseDown = function (e) {
+    }
+    _onMouseDown(e) {
         this._dragging = true;
         this._velocityAverager.clear();
-        this._velocity = new point_1.Point();
+        this._velocity = new __WEBPACK_IMPORTED_MODULE_0__point__["a" /* Point */]();
         e.preventDefault();
         e.stopPropagation();
-    };
-    EleDragger.prototype._onMouseUp = function (e) {
-        var _this = this;
+    }
+    _onMouseUp(e) {
         this._dragging = false;
         this._velocity = this._velocityAverager.average;
         if (this._timerHandle !== -1) {
             clearTimeout(this._timerHandle);
         }
-        this._timerHandle = setInterval(function () { return _this._coast(); }, 13);
+        this._timerHandle = setInterval(() => this._coast(), 13);
         e.preventDefault();
         e.stopPropagation();
-    };
-    EleDragger.prototype._dragTimeout = function () {
+    }
+    _dragTimeout() {
         this._velocityAverager.clear();
-    };
-    EleDragger.prototype._coast = function () {
-        var xVel = Math.abs(this._velocity.x);
-        var yVel = Math.abs(this._velocity.y);
+    }
+    _coast() {
+        let xVel = Math.abs(this._velocity.x);
+        let yVel = Math.abs(this._velocity.y);
         if (xVel < 0.01 && yVel < 0.01) {
             clearInterval(this._timerHandle);
             this._timerHandle = -1;
-            this._velocity = new point_1.Point(0, 0);
+            this._velocity = new __WEBPACK_IMPORTED_MODULE_0__point__["a" /* Point */](0, 0);
         }
         else {
             this._pos.bumpBy(this._velocity);
@@ -355,218 +316,188 @@ var EleDragger = (function () {
             this._velocity.x *= 0.95;
             this._velocity.y *= 0.95;
         }
-    };
-    return EleDragger;
-}());
-exports.EleDragger = EleDragger;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = EleDragger;
+
 
 
 /***/ }),
 /* 5 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__point__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__zoom1d__ = __webpack_require__(6);
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var point_1 = __webpack_require__(1);
-var zoom1d_1 = __webpack_require__(6);
-var EleZoomer = (function () {
-    function EleZoomer(_ele, _pos) {
-        var _this = this;
+
+class EleZoomer {
+    constructor(_ele, _pos) {
         this._ele = _ele;
         this._pos = _pos;
-        this._size = new point_1.Point(0, 0);
-        this._mousePos = new point_1.Point(0, 0);
+        this._size = new __WEBPACK_IMPORTED_MODULE_0__point__["a" /* Point */](0, 0);
+        this._mousePos = new __WEBPACK_IMPORTED_MODULE_0__point__["a" /* Point */](0, 0);
         this._px = "px";
         this._ele.style.display = "block";
         this._ele.style.position = "absolute";
-        this._ele.target.addEventListener("mousemove", function (e) { return _this._onMouseMove(e); });
-        this._ele.target.addEventListener("mousewheel", function (e) { return _this._onMouseWheel(e); });
+        this._ele.target.addEventListener("mousemove", (e) => this._onMouseMove(e));
+        this._ele.target.addEventListener("wheel", (e) => this._onMouseWheel(e));
     }
-    Object.defineProperty(EleZoomer.prototype, "size", {
-        get: function () { return this._size; },
-        enumerable: true,
-        configurable: true
-    });
-    EleZoomer.prototype.setSize = function (size) {
+    get size() { return this._size; }
+    setSize(size) {
         this._size = size;
         this._ele.style.width = size.x + this._px;
         this._ele.style.height = size.y + this._px;
-    };
-    EleZoomer.prototype._onMouseMove = function (e) {
+    }
+    _onMouseMove(e) {
         this._mousePos.updateFromMouseEvent(e);
         e.preventDefault();
         e.stopPropagation();
-    };
-    EleZoomer.prototype._onMouseWheel = function (e) {
-        var delta = (e.wheelDeltaY > 0) ? 1.1 : 0.9;
+    }
+    _onMouseWheel(e) {
+        let delta = (e.deltaY > 0) ? 1.1 : 0.9;
         this.zoom(delta, this._mousePos);
         e.preventDefault();
         e.stopPropagation();
-    };
-    EleZoomer.prototype.zoom = function (zoomRatio, zoomPoint) {
-        var x = this._mousePos.x;
-        var y = this._mousePos.y;
-        var x1 = this._pos.x;
-        var y1 = this._pos.y;
-        var x2 = x1 + this.size.x;
-        var y2 = y1 + this.size.y;
-        var newX1X2 = zoom1d_1.Zoom1d.zoom(x, x1, x2, zoomRatio);
-        var newY1Y2 = zoom1d_1.Zoom1d.zoom(y, y1, y2, zoomRatio);
+    }
+    zoom(zoomRatio, zoomPoint) {
+        let x = this._mousePos.x;
+        let y = this._mousePos.y;
+        let x1 = this._pos.x;
+        let y1 = this._pos.y;
+        let x2 = x1 + this.size.x;
+        let y2 = y1 + this.size.y;
+        let newX1X2 = __WEBPACK_IMPORTED_MODULE_1__zoom1d__["a" /* Zoom1d */].zoom(x, x1, x2, zoomRatio);
+        let newY1Y2 = __WEBPACK_IMPORTED_MODULE_1__zoom1d__["a" /* Zoom1d */].zoom(y, y1, y2, zoomRatio);
         this._pos.x = newX1X2[0];
         this._pos.y = newY1Y2[0];
         this._setPos(this._pos);
         this.size.x = newX1X2[1] - newX1X2[0];
         this.size.y = newY1Y2[1] - newY1Y2[0];
         this.setSize(this.size);
-    };
-    EleZoomer.prototype._setPos = function (pos) {
+    }
+    _setPos(pos) {
         this._ele.style.left = pos.x + this._px;
         this._ele.style.top = pos.y + this._px;
-    };
-    return EleZoomer;
-}());
-exports.EleZoomer = EleZoomer;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = EleZoomer;
+
 
 
 /***/ }),
 /* 6 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Zoom1d = (function () {
-    function Zoom1d() {
-    }
-    Zoom1d.zoom = function (zoomPoint, leftEdge, rightEdge, zoomPercent) {
-        var delta;
-        var newLeftEdge;
-        var newRightEdge;
-        var newWidth = (rightEdge - leftEdge) * zoomPercent;
-        if (leftEdge > zoomPoint) {
+class Zoom1d {
+    static zoom(zoomPoint, leftEdge, rightEdge, zoomPercent) {
+        let delta;
+        let newLeftEdge;
+        let newRightEdge;
+        let newWidth = (rightEdge - leftEdge) * zoomPercent;
+        if (leftEdge > zoomPoint) { // Zoom object is to the right of x.
             delta = leftEdge - zoomPoint;
             newLeftEdge = zoomPoint + (delta * zoomPercent);
             newRightEdge = newLeftEdge + newWidth;
         }
-        else if (zoomPoint > rightEdge) {
+        else if (zoomPoint > rightEdge) { // Zoom object is to the left of x.
             delta = zoomPoint - rightEdge;
             newRightEdge = zoomPoint - (delta * zoomPercent);
             newLeftEdge = newRightEdge - newWidth;
         }
-        else {
-            var left = zoomPoint - leftEdge;
-            var right = rightEdge - zoomPoint;
-            var newLeft = left * zoomPercent;
-            var newRight = right * zoomPercent;
+        else { // Zoom object straddles x.
+            let left = zoomPoint - leftEdge;
+            let right = rightEdge - zoomPoint;
+            let newLeft = left * zoomPercent;
+            let newRight = right * zoomPercent;
             newLeftEdge = zoomPoint - newLeft;
             newRightEdge = zoomPoint + newRight;
         }
         return [newLeftEdge, newRightEdge];
-    };
-    return Zoom1d;
-}());
-exports.Zoom1d = Zoom1d;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Zoom1d;
+
 
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ele__ = __webpack_require__(0);
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = __webpack_require__(0);
-var DivEle = (function (_super) {
-    __extends(DivEle, _super);
-    function DivEle() {
-        var _this = _super.call(this) || this;
-        _this.target = document.createElement("div");
-        return _this;
+class DivEle extends __WEBPACK_IMPORTED_MODULE_0__ele__["a" /* Ele */] {
+    constructor() {
+        super();
+        this.target = document.createElement("div");
     }
-    return DivEle;
-}(ele_1.Ele));
-exports.DivEle = DivEle;
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = DivEle;
+
 
 
 /***/ }),
 /* 8 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_img_drag_zoom_ele__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_video_drag_zoom_ele__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_axis_ele__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_web_app__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__controls__ = __webpack_require__(14);
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var img_drag_zoom_ele_1 = __webpack_require__(2);
-var video_drag_zoom_ele_1 = __webpack_require__(10);
-var axis_ele_1 = __webpack_require__(12);
-var web_app_1 = __webpack_require__(13);
-var controls_1 = __webpack_require__(14);
-var WebImgApp = (function (_super) {
-    __extends(WebImgApp, _super);
-    function WebImgApp() {
-        var _this = _super.call(this) || this;
-        _this.cookieName = "web-img-save-data";
-        _this._removeImgEle = function (imgToRemove) { return _this._axis.removeChild(imgToRemove); };
-        _this._axis = new axis_ele_1.AxisEle();
-        _this._controls = new controls_1.Controls(_this.cookieName, _this._axis, _this._removeImgEle);
-        _this.addChildren([
-            _this._axis,
-            _this._controls,
+
+
+
+
+class WebImgApp extends __WEBPACK_IMPORTED_MODULE_3__lib_web_app__["a" /* WebApp */] {
+    constructor() {
+        super();
+        this.cookieName = "web-img-save-data";
+        this._removeImgEle = (imgToRemove) => this._axis.removeChild(imgToRemove);
+        this._axis = new __WEBPACK_IMPORTED_MODULE_2__lib_axis_ele__["a" /* AxisEle */]();
+        this._controls = new __WEBPACK_IMPORTED_MODULE_4__controls__["a" /* Controls */](this.cookieName, this._axis, this._removeImgEle);
+        this.addChildren([
+            this._axis,
+            this._controls,
         ]);
-        window.addEventListener("paste", function (e) { return _this._onPaste(e); });
-        window.addEventListener("keydown", function (e) { return _this.toggleControls(e); });
-        return _this;
+        window.addEventListener("paste", (e) => this._onPaste(e));
+        window.addEventListener("keydown", (e) => this.toggleControls(e));
     }
-    WebImgApp.prototype._onPaste = function (e) {
-        var _this = this;
-        var src = e.clipboardData.getData("text/plain");
+    _onPaste(e) {
+        let src = e.clipboardData.getData("text/plain");
         if (src.length === 0) {
             return;
         }
-        var dotIdx = src.lastIndexOf(".");
+        let dotIdx = src.lastIndexOf(".");
         if (dotIdx < 0) {
             return;
         }
-        var extension = src.substr(dotIdx + 1);
-        var imgExtensions = [
+        let extension = src.substr(dotIdx + 1);
+        let imgExtensions = [
             "gif",
             "jpg",
             "jpeg",
             "png",
         ];
-        if (imgExtensions.filter(function (s) { return s === extension; }).length === 1) {
-            this._axis.addDragZoomEle(new img_drag_zoom_ele_1.ImgDragZoomEle(src, this._removeImgEle));
+        //if (imgExtensions.filter(s => s === extension).length === 1) {
+        if (imgExtensions.filter(s => src.includes(s)).length === 1) {
+            this._axis.addDragZoomEle(new __WEBPACK_IMPORTED_MODULE_0__lib_img_drag_zoom_ele__["a" /* ImgDragZoomEle */](src, this._removeImgEle));
             return;
         }
-        var vidExtensions = [
+        let vidExtensions = [
             "mp4",
             "webm"
         ];
-        if (vidExtensions.filter(function (s) { return s === extension; }).length === 1) {
-            this._axis.addDragZoomEle(new video_drag_zoom_ele_1.VideoDragZoomEle(src, function (videoToRemove) { return _this.removeChild(videoToRemove); }));
+        if (vidExtensions.filter(s => s === extension).length === 1) {
+            this._axis.addDragZoomEle(new __WEBPACK_IMPORTED_MODULE_1__lib_video_drag_zoom_ele__["a" /* VideoDragZoomEle */](src, (videoToRemove) => this.removeChild(videoToRemove)));
         }
-    };
-    WebImgApp.prototype.toggleControls = function (e) {
+    }
+    toggleControls(e) {
         if (e.key !== " ") {
             return;
         }
@@ -576,10 +507,9 @@ var WebImgApp = (function (_super) {
         else {
             this._controls.target.style.display = "none";
         }
-    };
-    return WebImgApp;
-}(web_app_1.WebApp));
-window.onload = function () {
+    }
+}
+window.onload = () => {
     try {
         new WebImgApp();
     }
@@ -591,200 +521,131 @@ window.onload = function () {
 
 /***/ }),
 /* 9 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ele__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__model__ = __webpack_require__(3);
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = __webpack_require__(0);
-var model_1 = __webpack_require__(3);
-var ImgEle = (function (_super) {
-    __extends(ImgEle, _super);
-    function ImgEle(src, _onRemoved) {
-        if (src === void 0) { src = null; }
-        var _this = _super.call(this) || this;
-        _this._onRemoved = _onRemoved;
-        _this.target = document.createElement("img");
-        _this.src = src;
-        _this.imgElement.addEventListener("contextmenu", function (e) { return _this._onContextMenu(e); });
-        return _this;
+
+class ImgEle extends __WEBPACK_IMPORTED_MODULE_0__ele__["a" /* Ele */] {
+    constructor(src = null, _onRemoved) {
+        super();
+        this._onRemoved = _onRemoved;
+        this.target = document.createElement("img");
+        this.src = src;
+        this.imgElement.addEventListener("contextmenu", (e) => this._onContextMenu(e));
     }
-    Object.defineProperty(ImgEle.prototype, "imgElement", {
-        get: function () { return this.target; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ImgEle.prototype, "src", {
-        set: function (src) {
-            if (src === null) {
-                this.imgElement.style.display = "hidden";
-            }
-            else {
-                this.imgElement.style.display = "block";
-                this.imgElement.src = src;
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ImgEle.prototype.toModel = function () {
+    get imgElement() { return this.target; }
+    set src(src) {
+        if (src === null) {
+            this.imgElement.style.display = "hidden";
+        }
+        else {
+            this.imgElement.style.display = "block";
+            this.imgElement.src = src;
+        }
+    }
+    toModel() {
         return new ImgEleModel(this.imgElement.src);
-    };
-    ImgEle.prototype._onContextMenu = function (e) {
+    }
+    _onContextMenu(e) {
         this._onRemoved(this);
         e.preventDefault();
         e.stopPropagation();
-    };
-    return ImgEle;
-}(ele_1.Ele));
-exports.ImgEle = ImgEle;
-var ImgEleModel = (function (_super) {
-    __extends(ImgEleModel, _super);
-    function ImgEleModel(src) {
-        var _this = _super.call(this) || this;
-        _this.src = src;
-        return _this;
     }
-    return ImgEleModel;
-}(model_1.Model));
-exports.ImgEleModel = ImgEleModel;
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = ImgEle;
+
+class ImgEleModel extends __WEBPACK_IMPORTED_MODULE_1__model__["a" /* Model */] {
+    constructor(src) {
+        super();
+        this.src = src;
+    }
+}
+/* unused harmony export ImgEleModel */
+
 
 
 /***/ }),
 /* 10 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__video_ele__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__point__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ele_dragger__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ele_zoomer__ = __webpack_require__(5);
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var video_ele_1 = __webpack_require__(11);
-var point_1 = __webpack_require__(1);
-var ele_dragger_1 = __webpack_require__(4);
-var ele_zoomer_1 = __webpack_require__(5);
-var VideoDragZoomEle = (function (_super) {
-    __extends(VideoDragZoomEle, _super);
-    function VideoDragZoomEle(src, onRemoved) {
-        if (src === void 0) { src = null; }
-        var _this = _super.call(this, src, onRemoved) || this;
-        _this._pos = new point_1.Point(0, 0);
-        _this.dragger = new ele_dragger_1.EleDragger(_this, _this._pos);
-        _this.zoomer = new ele_zoomer_1.EleZoomer(_this, _this._pos);
-        _this.videoElement.addEventListener("loadeddata", function () { return _this._onLoaded(); });
-        return _this;
+
+
+
+class VideoDragZoomEle extends __WEBPACK_IMPORTED_MODULE_0__video_ele__["a" /* VideoEle */] {
+    constructor(src = null, onRemoved) {
+        super(src, onRemoved);
+        this._pos = new __WEBPACK_IMPORTED_MODULE_1__point__["a" /* Point */](0, 0);
+        this.dragger = new __WEBPACK_IMPORTED_MODULE_2__ele_dragger__["a" /* EleDragger */](this, this._pos);
+        this.zoomer = new __WEBPACK_IMPORTED_MODULE_3__ele_zoomer__["a" /* EleZoomer */](this, this._pos);
+        this.videoElement.addEventListener("loadeddata", () => this._onLoaded());
     }
-    Object.defineProperty(VideoDragZoomEle.prototype, "pos", {
-        get: function () { return this._pos; },
-        enumerable: true,
-        configurable: true
-    });
-    VideoDragZoomEle.prototype._onLoaded = function () {
-        this.zoomer.setSize(new point_1.Point(this.videoElement.videoWidth, this.videoElement.videoHeight));
-    };
-    return VideoDragZoomEle;
-}(video_ele_1.VideoEle));
-exports.VideoDragZoomEle = VideoDragZoomEle;
+    get pos() { return this._pos; }
+    _onLoaded() {
+        this.zoomer.setSize(new __WEBPACK_IMPORTED_MODULE_1__point__["a" /* Point */](this.videoElement.videoWidth, this.videoElement.videoHeight));
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = VideoDragZoomEle;
+
 
 
 /***/ }),
 /* 11 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ele__ = __webpack_require__(0);
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = __webpack_require__(0);
-var VideoEle = (function (_super) {
-    __extends(VideoEle, _super);
-    function VideoEle(src, _onRemoved) {
-        if (src === void 0) { src = null; }
-        var _this = _super.call(this) || this;
-        _this._onRemoved = _onRemoved;
-        _this.target = document.createElement("video");
-        _this.src = src;
-        _this.videoElement.addEventListener("contextmenu", function (e) { return _this._onContextMenu(e); });
-        return _this;
+class VideoEle extends __WEBPACK_IMPORTED_MODULE_0__ele__["a" /* Ele */] {
+    constructor(src = null, _onRemoved) {
+        super();
+        this._onRemoved = _onRemoved;
+        this.target = document.createElement("video");
+        this.src = src;
+        this.videoElement.addEventListener("contextmenu", (e) => this._onContextMenu(e));
     }
-    Object.defineProperty(VideoEle.prototype, "videoElement", {
-        get: function () { return this.target; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(VideoEle.prototype, "src", {
-        set: function (src) {
-            if (src === null) {
-                this.videoElement.style.display = "hidden";
-            }
-            else {
-                this.videoElement.style.display = "block";
-                this.videoElement.src = src;
-                //this.videoElement.autoplay = true;
-                this.videoElement.controls = true;
-                this.videoElement.loop = true;
-                this.videoElement.playbackRate = 1.0;
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    VideoEle.prototype._onContextMenu = function (e) {
+    get videoElement() { return this.target; }
+    set src(src) {
+        if (src === null) {
+            this.videoElement.style.display = "hidden";
+        }
+        else {
+            this.videoElement.style.display = "block";
+            this.videoElement.src = src;
+            //this.videoElement.autoplay = true;
+            this.videoElement.controls = true;
+            this.videoElement.loop = true;
+            this.videoElement.playbackRate = 1.0;
+        }
+    }
+    _onContextMenu(e) {
         this._onRemoved(this);
         e.preventDefault();
-    };
-    return VideoEle;
-}(ele_1.Ele));
-exports.VideoEle = VideoEle;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = VideoEle;
+
 
 
 /***/ }),
 /* 12 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__div_ele__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__point__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__zoom1d__ = __webpack_require__(6);
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var div_ele_1 = __webpack_require__(7);
-var point_1 = __webpack_require__(1);
-var zoom1d_1 = __webpack_require__(6);
+
+
 /**
  * The intent of this element is to fill the whole screen and allow child elemements to
  * be drug around google maps style... but without the tile-loading nature.
@@ -792,174 +653,163 @@ var zoom1d_1 = __webpack_require__(6);
  * When a veil is placed over all the images mouse drags and zooms affect all images. When the veil is behind all the
  * images mouse drags and zooms when over an image affect only that image (position and size individual images).
  */
-var AxisEle = (function (_super) {
-    __extends(AxisEle, _super);
-    function AxisEle() {
-        var _this = _super.call(this) || this;
-        _this.toggleIndividualImgZoomKey = "a";
-        _this._mousePos = new point_1.Point();
-        _this._dragging = false;
-        _this._veil = new div_ele_1.DivEle();
+class AxisEle extends __WEBPACK_IMPORTED_MODULE_0__div_ele__["a" /* DivEle */] {
+    constructor() {
+        super();
+        this.toggleIndividualImgZoomKey = "a";
+        this._mousePos = new __WEBPACK_IMPORTED_MODULE_1__point__["a" /* Point */]();
+        this._dragging = false;
+        this._veil = new __WEBPACK_IMPORTED_MODULE_0__div_ele__["a" /* DivEle */]();
         // todo: the "coast" function is copied between here and ele-dragger.ts. Need to combine these so we don't repeat the code.
-        _this._timerHandle = -1;
-        _this._velocity = new point_1.Point(0, 0);
-        _this._velocityAverager = new point_1.PointAverager();
-        _this._setupStyle();
-        _this._setupVeil();
-        _this._setupKeyDownEventListener();
-        return _this;
+        this._timerHandle = -1;
+        this._velocity = new __WEBPACK_IMPORTED_MODULE_1__point__["a" /* Point */](0, 0);
+        this._velocityAverager = new __WEBPACK_IMPORTED_MODULE_1__point__["b" /* PointAverager */]();
+        this._setupStyle();
+        this._setupVeil();
+        this._setupKeyDownEventListener();
     }
-    AxisEle.prototype._setupStyle = function () {
+    _setupStyle() {
         this.target.classList.add("axis-ele");
-    };
-    AxisEle.prototype._setupVeil = function () {
+    }
+    _setupVeil() {
         this._setupVeilStyle();
         this._createVeilEventListeners();
         this.addUntrackedChild(this._veil);
-    };
-    AxisEle.prototype._setupVeilStyle = function () {
+    }
+    _setupVeilStyle() {
         this._veil.target.classList.add("axis-veil-ele");
         this._veil.style.zIndex = "6";
-    };
-    AxisEle.prototype._createVeilEventListeners = function () {
-        var _this = this;
-        this._veil.target.addEventListener("mousedown", function (e) { return _this._mouseDown(e); });
-        this._veil.target.addEventListener("mouseup", function (e) { return _this._mouseUp(e); });
-        this._veil.target.addEventListener("mousemove", function (e) { return _this._mouseMove(e); });
-        this._veil.target.addEventListener("mousewheel", function (e) { return _this._mouseWheel(e); });
-        this._veil.target.addEventListener("contextmenu", function (e) { return _this._onContextMenu(e); });
-    };
-    AxisEle.prototype._setupKeyDownEventListener = function () {
-        var _this = this;
-        window.addEventListener("keydown", function (e) {
-            if (e.key === _this.toggleIndividualImgZoomKey) {
-                if (_this._veil.style.zIndex === "6") {
-                    _this._veil.style.zIndex = "1";
+    }
+    _createVeilEventListeners() {
+        this._veil.target.addEventListener("mousedown", (e) => this._mouseDown(e));
+        this._veil.target.addEventListener("mouseup", (e) => this._mouseUp(e));
+        this._veil.target.addEventListener("mousemove", (e) => this._mouseMove(e));
+        this._veil.target.addEventListener("wheel", (e) => this._mouseWheel(e));
+        this._veil.target.addEventListener("contextmenu", (e) => this._onContextMenu(e));
+    }
+    _setupKeyDownEventListener() {
+        window.addEventListener("keydown", (e) => {
+            if (e.key === this.toggleIndividualImgZoomKey) {
+                if (this._veil.style.zIndex === "6") {
+                    this._veil.style.zIndex = "1";
                 }
                 else {
-                    _this._veil.style.zIndex = "6";
+                    this._veil.style.zIndex = "6";
                 }
             }
         });
-    };
-    AxisEle.prototype.addDragZoomEle = function (child) {
-        _super.prototype.addChild.call(this, child);
-    };
-    AxisEle.prototype._mouseDown = function (e) {
+    }
+    addDragZoomEle(child) {
+        super.addChild(child);
+    }
+    _mouseDown(e) {
         this._dragging = true;
         this._velocityAverager.clear();
-        this._velocity = new point_1.Point();
+        this._velocity = new __WEBPACK_IMPORTED_MODULE_1__point__["a" /* Point */]();
         e.preventDefault();
         e.stopPropagation();
-    };
-    AxisEle.prototype._mouseUp = function (e) {
-        var _this = this;
+    }
+    _mouseUp(e) {
         this._dragging = false;
         this._velocity = this._velocityAverager.average;
         if (this._timerHandle !== -1) {
             clearTimeout(this._timerHandle);
         }
-        this._timerHandle = setInterval(function () { return _this._coast(); }, 13);
+        this._timerHandle = setInterval(() => this._coast(), 13);
         e.preventDefault();
         e.stopPropagation();
-    };
-    AxisEle.prototype._mouseMove = function (e) {
-        var _this = this;
-        var oldMousePos = this._mousePos.copy();
+    }
+    _mouseMove(e) {
+        let oldMousePos = this._mousePos.copy();
         this._mousePos.updateFromMouseEvent(e);
         if (this._dragging) {
-            var delta_1 = this._mousePos.subtract(oldMousePos);
-            this.children.forEach(function (child) {
-                child.pos.bumpBy(delta_1);
+            let delta = this._mousePos.subtract(oldMousePos);
+            this.children.forEach((child) => {
+                child.pos.bumpBy(delta);
                 child.dragger.setPos(child.pos);
             });
             if (this._timerHandle !== -1) {
                 clearTimeout(this._timerHandle);
             }
-            this._timerHandle = setTimeout(function () { return _this._dragTimeout(); }, 100);
-            this._velocityAverager.push(delta_1);
+            this._timerHandle = setTimeout(() => this._dragTimeout(), 100);
+            this._velocityAverager.push(delta);
         }
         e.preventDefault();
         e.stopPropagation();
-    };
-    AxisEle.prototype._dragTimeout = function () {
+    }
+    _dragTimeout() {
         this._velocityAverager.clear();
-    };
-    AxisEle.prototype._coast = function () {
-        var _this = this;
-        var xVel = Math.abs(this._velocity.x);
-        var yVel = Math.abs(this._velocity.y);
+    }
+    _coast() {
+        let xVel = Math.abs(this._velocity.x);
+        let yVel = Math.abs(this._velocity.y);
         if (xVel < 0.01 && yVel < 0.01) {
             clearInterval(this._timerHandle);
             this._timerHandle = -1;
-            this._velocity = new point_1.Point(0, 0);
+            this._velocity = new __WEBPACK_IMPORTED_MODULE_1__point__["a" /* Point */](0, 0);
         }
         else {
-            this.children.forEach(function (child) {
-                child.pos.bumpBy(_this._velocity);
+            this.children.forEach((child) => {
+                child.pos.bumpBy(this._velocity);
                 child.dragger.setPos(child.pos);
             });
             this._velocity.x *= 0.95;
             this._velocity.y *= 0.95;
         }
-    };
-    AxisEle.prototype._mouseWheel = function (e) {
-        var _this = this;
-        var zoom = (e.deltaY < 0) ? 1.1 : 0.9;
-        this.children.forEach(function (child) {
-            _this._zoomChild(child, zoom);
+    }
+    _mouseWheel(e) {
+        let zoom = (e.deltaY < 0) ? 1.1 : 0.9;
+        this.children.forEach((child) => {
+            this._zoomChild(child, zoom);
         });
         e.preventDefault();
         e.stopPropagation();
-    };
-    AxisEle.prototype._zoomChild = function (child, zoomPercent) {
-        var x = this._mousePos.x;
-        var y = this._mousePos.y;
-        var x1 = child.pos.x;
-        var y1 = child.pos.y;
-        var x2 = x1 + child.zoomer.size.x;
-        var y2 = y1 + child.zoomer.size.y;
-        var newX1X2 = zoom1d_1.Zoom1d.zoom(x, x1, x2, zoomPercent);
+    }
+    _zoomChild(child, zoomPercent) {
+        let x = this._mousePos.x;
+        let y = this._mousePos.y;
+        let x1 = child.pos.x;
+        let y1 = child.pos.y;
+        let x2 = x1 + child.zoomer.size.x;
+        let y2 = y1 + child.zoomer.size.y;
+        let newX1X2 = __WEBPACK_IMPORTED_MODULE_2__zoom1d__["a" /* Zoom1d */].zoom(x, x1, x2, zoomPercent);
         //noinspection JSSuspiciousNameCombination
-        var newY1Y2 = zoom1d_1.Zoom1d.zoom(y, y1, y2, zoomPercent);
+        let newY1Y2 = __WEBPACK_IMPORTED_MODULE_2__zoom1d__["a" /* Zoom1d */].zoom(y, y1, y2, zoomPercent);
         child.pos.x = newX1X2[0];
         child.pos.y = newY1Y2[0];
         child.dragger.setPos(child.pos);
         child.zoomer.size.x = newX1X2[1] - newX1X2[0];
         child.zoomer.size.y = newY1Y2[1] - newY1Y2[0];
         child.zoomer.setSize(child.zoomer.size);
-    };
+    }
     //noinspection JSMethodCanBeStatic
-    AxisEle.prototype._onContextMenu = function (e) {
+    _onContextMenu(e) {
         e.preventDefault();
         e.stopPropagation();
-    };
-    return AxisEle;
-}(div_ele_1.DivEle));
-exports.AxisEle = AxisEle;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = AxisEle;
+
 
 
 /***/ }),
 /* 13 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var WebApp = (function () {
-    function WebApp() {
+class WebApp {
+    constructor() {
         this._children = [];
     }
-    WebApp.prototype.addChildren = function (children) {
-        var _this = this;
-        children.forEach(function (child) { return _this.addChild(child); });
-    };
-    WebApp.prototype.addChild = function (child) {
+    addChildren(children) {
+        children.forEach((child) => this.addChild(child));
+    }
+    addChild(child) {
         this._children.push(child);
         window.document.body.appendChild(child.target);
-    };
-    WebApp.prototype.removeChild = function (child) {
-        var childIndex = this._children.indexOf(child);
+    }
+    removeChild(child) {
+        let childIndex = this._children.indexOf(child);
         if (childIndex < 0) {
             throw new Error("Attempted to remove unknown child");
         }
@@ -967,68 +817,57 @@ var WebApp = (function () {
         window.document.body.removeChild(child.target);
         child = null;
         console.log("num web app children: " + this._children.length);
-    };
-    return WebApp;
-}());
-exports.WebApp = WebApp;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = WebApp;
+
 
 
 /***/ }),
 /* 14 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_div_ele__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_button_ele__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_text_area_ele__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_img_drag_zoom_ele__ = __webpack_require__(2);
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var div_ele_1 = __webpack_require__(7);
-var button_ele_1 = __webpack_require__(15);
-var text_area_ele_1 = __webpack_require__(16);
-var img_drag_zoom_ele_1 = __webpack_require__(2);
-var Controls = (function (_super) {
-    __extends(Controls, _super);
-    function Controls(cookieName, axis, onRemove) {
-        var _this = _super.call(this) || this;
-        _this.cookieName = cookieName;
-        _this.axis = axis;
-        _this.onRemove = onRemove;
-        _this._textArea = new text_area_ele_1.TextAreaEle();
-        _this.target.classList.add("controls");
-        _this.style.display = "none";
-        _this._textArea.textAreaElement.cols = 100;
-        _this._textArea.textAreaElement.rows = 5;
-        _this._textArea.text = localStorage[cookieName];
-        var textContainer = new div_ele_1.DivEle();
+
+
+
+class Controls extends __WEBPACK_IMPORTED_MODULE_0__lib_div_ele__["a" /* DivEle */] {
+    constructor(cookieName, axis, onRemove) {
+        super();
+        this.cookieName = cookieName;
+        this.axis = axis;
+        this.onRemove = onRemove;
+        this._textArea = new __WEBPACK_IMPORTED_MODULE_2__lib_text_area_ele__["a" /* TextAreaEle */]();
+        this.target.classList.add("controls");
+        this.style.display = "none";
+        this._textArea.textAreaElement.cols = 100;
+        this._textArea.textAreaElement.rows = 5;
+        this._textArea.text = localStorage[cookieName];
+        let textContainer = new __WEBPACK_IMPORTED_MODULE_0__lib_div_ele__["a" /* DivEle */]();
         textContainer.style.padding = "10px";
-        textContainer.addChild(_this._textArea);
-        var buttonContainer = new div_ele_1.DivEle();
+        textContainer.addChild(this._textArea);
+        let buttonContainer = new __WEBPACK_IMPORTED_MODULE_0__lib_div_ele__["a" /* DivEle */]();
         buttonContainer.style.padding = "10px";
         buttonContainer.addChildren([
-            new button_ele_1.ButtonEle("Apply JSON", function () { return _this.applyJSON(); }),
-            new button_ele_1.ButtonEle("Save Chagnes", function () { return _this.saveChanges(); })
+            new __WEBPACK_IMPORTED_MODULE_1__lib_button_ele__["a" /* ButtonEle */]("Apply JSON", () => this.applyJSON()),
+            new __WEBPACK_IMPORTED_MODULE_1__lib_button_ele__["a" /* ButtonEle */]("Save Chagnes", () => this.saveChanges())
         ]);
-        _this.addChildren([
+        this.addChildren([
             textContainer,
             buttonContainer
         ]);
-        return _this;
     }
-    Controls.prototype.applyJSON = function () {
-        var _this = this;
-        var newJSON = this._textArea.text;
+    applyJSON() {
+        let newJSON = this._textArea.text;
         if (newJSON.length === 0) {
             newJSON = "[]";
         }
-        var models;
+        let models;
         try {
             models = JSON.parse(newJSON);
         }
@@ -1039,103 +878,65 @@ var Controls = (function (_super) {
         while (this.axis.children.length > 0) {
             this.axis.children[0].removeChild(this.axis.children[0]);
         }
-        models.forEach(function (model) {
-            var ele = img_drag_zoom_ele_1.ImgDragZoomEle.fromModel(model, _this.onRemove);
-            _this.axis.addChild(ele);
+        models.forEach((model) => {
+            let ele = __WEBPACK_IMPORTED_MODULE_3__lib_img_drag_zoom_ele__["a" /* ImgDragZoomEle */].fromModel(model, this.onRemove);
+            this.axis.addChild(ele);
         });
-    };
-    Controls.prototype.saveChanges = function () {
-        var models = [];
-        this.axis.children.forEach(function (child) {
+    }
+    saveChanges() {
+        let models = [];
+        this.axis.children.forEach((child) => {
             models.push(child.toModel());
         });
         // alert(JSON.stringify(models));
         localStorage[this.cookieName] = JSON.stringify(models);
-    };
-    return Controls;
-}(div_ele_1.DivEle));
-exports.Controls = Controls;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Controls;
+
 
 
 /***/ }),
 /* 15 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ele__ = __webpack_require__(0);
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = __webpack_require__(0);
-var ButtonEle = (function (_super) {
-    __extends(ButtonEle, _super);
-    function ButtonEle(buttonText, _onClicked) {
-        var _this = _super.call(this) || this;
-        _this._onClicked = _onClicked;
-        _this.target = document.createElement("button");
-        _this.buttonElement.innerHTML = buttonText;
-        _this.buttonElement.onclick = _this._onClicked;
-        return _this;
+class ButtonEle extends __WEBPACK_IMPORTED_MODULE_0__ele__["a" /* Ele */] {
+    constructor(buttonText, _onClicked) {
+        super();
+        this._onClicked = _onClicked;
+        this.target = document.createElement("button");
+        this.buttonElement.innerHTML = buttonText;
+        this.buttonElement.onclick = this._onClicked;
     }
-    Object.defineProperty(ButtonEle.prototype, "buttonElement", {
-        get: function () { return this.target; },
-        enumerable: true,
-        configurable: true
-    });
-    return ButtonEle;
-}(ele_1.Ele));
-exports.ButtonEle = ButtonEle;
+    get buttonElement() { return this.target; }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = ButtonEle;
+
 
 
 /***/ }),
 /* 16 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ele__ = __webpack_require__(0);
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = __webpack_require__(0);
-var TextAreaEle = (function (_super) {
-    __extends(TextAreaEle, _super);
-    function TextAreaEle() {
-        var _this = _super.call(this) || this;
-        _this.target = document.createElement("textarea");
-        return _this;
+class TextAreaEle extends __WEBPACK_IMPORTED_MODULE_0__ele__["a" /* Ele */] {
+    get textAreaElement() { return this.target; }
+    get text() { return this.textAreaElement.value; }
+    set text(t) {
+        this.textAreaElement.value = t;
     }
-    Object.defineProperty(TextAreaEle.prototype, "textAreaElement", {
-        get: function () { return this.target; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextAreaEle.prototype, "text", {
-        get: function () { return this.textAreaElement.value; },
-        set: function (t) {
-            this.textAreaElement.value = t;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return TextAreaEle;
-}(ele_1.Ele));
-exports.TextAreaEle = TextAreaEle;
+    constructor() {
+        super();
+        this.target = document.createElement("textarea");
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = TextAreaEle;
+
 
 
 /***/ })
