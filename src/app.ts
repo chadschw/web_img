@@ -47,7 +47,6 @@ class WebImgApp extends WebApp {
             "png",
         ];
 
-        //if (imgExtensions.filter(s => s === extension).length === 1) {
         if (imgExtensions.filter(s => src.includes(s)).length ===1) {
             this._axis.addDragZoomEle(new ImgDragZoomEle(src, this._removeImgEle));
             return;
@@ -58,7 +57,7 @@ class WebImgApp extends WebApp {
             "webm"
         ];
 
-        if (vidExtensions.filter(s => s === extension).length === 1) {
+        if (vidExtensions.filter(s => src.includes(s)).length ===1) {
             this._axis.addDragZoomEle(new VideoDragZoomEle(src, (videoToRemove: VideoEle)=>this.removeChild(videoToRemove)));
         }
     }

@@ -484,7 +484,6 @@ class WebImgApp extends __WEBPACK_IMPORTED_MODULE_3__lib_web_app__["a" /* WebApp
             "jpeg",
             "png",
         ];
-        //if (imgExtensions.filter(s => s === extension).length === 1) {
         if (imgExtensions.filter(s => src.includes(s)).length === 1) {
             this._axis.addDragZoomEle(new __WEBPACK_IMPORTED_MODULE_0__lib_img_drag_zoom_ele__["a" /* ImgDragZoomEle */](src, this._removeImgEle));
             return;
@@ -493,7 +492,7 @@ class WebImgApp extends __WEBPACK_IMPORTED_MODULE_3__lib_web_app__["a" /* WebApp
             "mp4",
             "webm"
         ];
-        if (vidExtensions.filter(s => s === extension).length === 1) {
+        if (vidExtensions.filter(s => src.includes(s)).length === 1) {
             this._axis.addDragZoomEle(new __WEBPACK_IMPORTED_MODULE_1__lib_video_drag_zoom_ele__["a" /* VideoDragZoomEle */](src, (videoToRemove) => this.removeChild(videoToRemove)));
         }
     }
